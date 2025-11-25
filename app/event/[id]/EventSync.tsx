@@ -26,6 +26,7 @@ export default function EventSync({
             // Handle Presentation Mode
             if (state.presentationMode) {
                 if (!pathname.includes('/presentation')) {
+                    console.log('[EventSync] Redirecting to presentation due to presentationMode=true')
                     router.replace(`/event/${eventId}/presentation`)
                 }
                 return

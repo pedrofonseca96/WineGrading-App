@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Image from "next/image";
+import { LanguageProvider } from "@/contexts/LanguageContext";
+import LanguageToggle from "@/components/LanguageToggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,8 +20,6 @@ export const metadata: Metadata = {
   description: "Blind wine tasting and grading app",
 };
 
-import Image from "next/image";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,21 +30,29 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen relative`}
       >
-        <div className="fixed inset-0 -z-10">
-          <Image
-            src="/background.png"
-            alt="Winery Background"
-            fill
-            priority
-            quality={100}
-            className="object-cover object-center"
-            unoptimized
-          />
-          <div className="absolute inset-0 bg-stone-950/80 backdrop-blur-sm" />
-        </div>
-        <div className="relative z-0 min-h-screen">
-          {children}
-        </div>
+        <LanguageProvider>
+          <div className="fixed inset-0 -z-10">
+            <Image
+              src="/background.png"
+              alt="Winery Background"
+              fill
+              priority
+              quality={100}
+              className="object-cover object-center"
+              unoptimized
+            />
+            <div className="absolute inset-0 bg-stone-950/80 backdrop-blur-sm" />
+          </div>
+
+          {/* Language Toggle - Top Right */}
+          <div className="fixed top-4 right-4 z-50">
+            <LanguageToggle />
+          </div>
+
+          <div className="relative z-0 min-h-screen">
+            {children}
+          </div>
+        </LanguageProvider>
       </body>
     </html>
   );

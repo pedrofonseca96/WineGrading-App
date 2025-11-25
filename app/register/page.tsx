@@ -3,6 +3,7 @@
 import { useActionState } from 'react'
 import { register } from '@/app/actions/auth'
 import Link from 'next/link'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 type ActionState = {
     errors?: {
@@ -15,19 +16,20 @@ type ActionState = {
 
 export default function RegisterPage() {
     const [state, action, pending] = useActionState<ActionState, FormData>(register, {})
+    const { t } = useLanguage()
 
     return (
         <div className="min-h-screen flex items-center justify-center text-stone-100">
             <div className="w-full max-w-md p-8 space-y-6 bg-stone-800 rounded-xl shadow-2xl border border-stone-700">
                 <div className="text-center">
-                    <h1 className="text-3xl font-serif font-bold text-amber-500">Join the Table</h1>
-                    <p className="mt-2 text-stone-400">Create your account</p>
+                    <h1 className="text-3xl font-serif font-bold text-amber-500">Junior Rocketeers</h1>
+                    <p className="mt-2 text-stone-400">{t.auth.registerTitle}</p>
                 </div>
 
                 <form action={action} className="space-y-4">
                     <div>
                         <label htmlFor="username" className="block text-sm font-medium text-stone-300">
-                            Username
+                            {t.auth.username}
                         </label>
                         <input
                             id="username"
@@ -43,7 +45,7 @@ export default function RegisterPage() {
 
                     <div>
                         <label htmlFor="password" className="block text-sm font-medium text-stone-300">
-                            Password
+                            {t.auth.password}
                         </label>
                         <input
                             id="password"
@@ -62,14 +64,14 @@ export default function RegisterPage() {
                         disabled={pending}
                         className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-stone-900 bg-amber-500 hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                        {pending ? 'Creating account...' : 'Register'}
+                        {pending ? `${t.auth.registerButton}...` : t.auth.registerButton}
                     </button>
                 </form>
 
                 <div className="text-center text-sm text-stone-400">
-                    Already have an account?{' '}
+                    {t.auth.alreadyHaveAccount}{' '}
                     <Link href="/login" className="font-medium text-amber-500 hover:text-amber-400">
-                        Sign in
+                        {t.auth.loginHere}
                     </Link>
                 </div>
             </div>

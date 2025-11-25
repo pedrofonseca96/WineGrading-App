@@ -97,8 +97,11 @@ export async function finishEvent(eventId: string) {
 
     await prisma.event.update({
         where: { id: eventId },
-        data: { status: 'finished' },
+        data: {
+            status: 'finished',
+            presentationMode: false  // Turn off presentation mode when event finishes
+        },
     })
 
-    revalidatePath(`/event/${eventId}`)
+    revalidatePath(`/event/${eventId}`, 'layout')
 }

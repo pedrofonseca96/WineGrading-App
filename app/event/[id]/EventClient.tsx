@@ -4,6 +4,7 @@ import { useState, useEffect, useTransition } from 'react'
 import { submitGrade, nextWine, previousWine, finishEvent } from '@/app/actions/grading'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 type EventData = {
     id: string
@@ -32,6 +33,7 @@ export default function EventClient({
     const [isPending, startTransition] = useTransition()
     const [grade, setGrade] = useState(initialGrade || { colorScore: 0, smellScore: 0, tasteScore: 0 })
     const [submitted, setSubmitted] = useState(!!initialGrade)
+    const { t } = useLanguage()
 
     // Poll for updates every 5 seconds
     useEffect(() => {
@@ -76,13 +78,13 @@ export default function EventClient({
     if (event.status === 'finished') {
         return (
             <div className="text-center py-12">
-                <h2 className="text-3xl font-serif text-amber-500 mb-4">Tasting Finished!</h2>
-                <p className="text-stone-400 mb-8">The results are being tallied.</p>
+                <h2 className="text-3xl font-serif text-amber-500 mb-4">{t.event.eventFinished}</h2>
+                <p className="text-stone-400 mb-8">{t.event.resultsBeingTallied}</p>
                 <Link
                     href={`/event/${event.id}/results`}
                     className="inline-block px-6 py-3 bg-amber-600 text-stone-900 font-bold rounded-full hover:bg-amber-500 transition-colors"
                 >
-                    Go to Results
+                    {t.event.goToResults}
                 </Link>
             </div>
         )
@@ -92,7 +94,7 @@ export default function EventClient({
         <div className="max-w-2xl mx-auto space-y-8">
             <div className="text-center">
                 <span className="inline-block px-3 py-1 rounded-full bg-stone-800 text-amber-500 text-sm font-medium mb-4 border border-stone-700">
-                    Wine #{event.currentWineOrder}
+                    {t.event.wineNumber}{event.currentWineOrder}
                 </span>
                 <h2 className="text-4xl font-serif font-bold text-stone-100">Tasting in Progress</h2>
                 <div className="text-xs text-stone-500 mt-2">
@@ -104,7 +106,7 @@ export default function EventClient({
                 <div className="space-y-8">
                     {/* Color */}
                     <div>
-                        <label className="block text-sm font-medium text-stone-400 mb-3 uppercase tracking-wider">Color (1-3)</label>
+                        <label className="block text-sm font-medium text-stone-400 mb-3 uppercase tracking-wider">{t.event.color} (1-3)</label>
                         <div className="flex justify-between gap-2">
                             {[1, 2, 3].map((val) => (
                                 <button
@@ -124,7 +126,7 @@ export default function EventClient({
 
                     {/* Smell */}
                     <div>
-                        <label className="block text-sm font-medium text-stone-400 mb-3 uppercase tracking-wider">Smell (1-7)</label>
+                        <label className="block text-sm font-medium text-stone-400 mb-3 uppercase tracking-wider">{t.event.smell} (1-7)</label>
                         <div className="grid grid-cols-7 gap-1">
                             {[1, 2, 3, 4, 5, 6, 7].map((val) => (
                                 <button
@@ -144,7 +146,7 @@ export default function EventClient({
 
                     {/* Taste */}
                     <div>
-                        <label className="block text-sm font-medium text-stone-400 mb-3 uppercase tracking-wider">Taste (1-10)</label>
+                        <label className="block text-sm font-medium text-stone-400 mb-3 uppercase tracking-wider">{t.event.taste} (1-10)</label>
                         <div className="grid grid-cols-5 gap-2 sm:grid-cols-10 sm:gap-1">
                             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((val) => (
                                 <button
@@ -168,7 +170,7 @@ export default function EventClient({
                             disabled={submitted || isPending || grade!.colorScore === 0 || grade!.smellScore === 0 || grade!.tasteScore === 0}
                             className="w-full py-4 bg-amber-500 text-stone-900 font-bold rounded-xl shadow-lg hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:-translate-y-0.5"
                         >
-                            {submitted ? 'Grade Submitted' : isPending ? 'Submitting...' : 'Submit Grade'}
+                            {submitted ? t.event.alreadyGraded : isPending ? `${t.event.submitGrade}...` : t.event.submitGrade}
                         </button>
                     </div>
                 </div>
@@ -176,26 +178,26 @@ export default function EventClient({
 
             {isAdmin && (
                 <div className="border-t border-stone-800 pt-8 mt-12">
-                    <h3 className="text-stone-500 text-sm font-medium uppercase tracking-wider mb-4 text-center">Admin Controls</h3>
+                    <h3 className="text-stone-500 text-sm font-medium uppercase tracking-wider mb-4 text-center">{t.admin.adminControls}</h3>
                     <div className="flex justify-center gap-4">
                         <button
                             onClick={() => startTransition(() => previousWine(event.id))}
                             disabled={event.currentWineOrder <= 1}
                             className="px-4 py-2 bg-stone-800 text-stone-400 rounded-lg hover:bg-stone-700 disabled:opacity-50"
                         >
-                            Previous Wine
+                            {t.event.previousWine}
                         </button>
                         <button
                             onClick={() => startTransition(() => nextWine(event.id))}
                             className="px-4 py-2 bg-stone-800 text-amber-500 rounded-lg hover:bg-stone-700 border border-amber-500/30"
                         >
-                            Next Wine
+                            {t.event.nextWine}
                         </button>
                         <button
                             onClick={() => startTransition(() => finishEvent(event.id))}
                             className="px-4 py-2 bg-red-900/30 text-red-400 rounded-lg hover:bg-red-900/50 border border-red-900/50"
                         >
-                            Finish Event
+                            {t.event.finishEvent}
                         </button>
                     </div>
                 </div>

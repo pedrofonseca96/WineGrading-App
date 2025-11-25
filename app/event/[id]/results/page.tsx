@@ -4,6 +4,7 @@ import { updateWineDetails } from '@/app/actions/results'
 import Link from 'next/link'
 import EditWineForm from './EditWineForm'
 import StartPresentationButton from './StartPresentationButton'
+import ExpandableWineCard from './ExpandableWineCard'
 
 async function getResults(eventId: string) {
     const grades = await prisma.grade.findMany({
@@ -96,43 +97,13 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
 
                 <div className="space-y-8">
                     {results.map((result, index) => (
-                        <div key={result.order} className="bg-stone-800 rounded-xl border border-stone-700 overflow-hidden">
-                            <div className="p-6 flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
-                                <div className="flex items-center gap-4">
-                                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-stone-700 text-amber-500 font-bold text-xl border border-stone-600">
-                                        #{index + 1}
-                                    </div>
-                                    <div>
-                                        <h3 className="text-2xl font-serif font-bold text-stone-100">
-                                            {result.wine?.name || `Wine #${result.order}`}
-                                        </h3>
-                                        <p className="text-stone-400 text-sm">
-                                            {result.wine?.description || 'No description added'}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-4xl font-bold text-amber-500">{result.totalScore}</div>
-                                    <div className="text-stone-500 text-xs uppercase tracking-wider">Total Score</div>
-                                </div>
-                            </div>
-
-                            {/* Breakdown */}
-                            <div className="bg-stone-850 px-6 py-4 border-t border-stone-700 grid grid-cols-3 gap-4 text-center">
-                                <div>
-                                    <div className="text-lg font-semibold text-stone-300">{result.colorScore}</div>
-                                    <div className="text-stone-500 text-xs">Color</div>
-                                </div>
-                                <div>
-                                    <div className="text-lg font-semibold text-stone-300">{result.smellScore}</div>
-                                    <div className="text-stone-500 text-xs">Smell</div>
-                                </div>
-                                <div>
-                                    <div className="text-lg font-semibold text-stone-300">{result.tasteScore}</div>
-                                    <div className="text-stone-500 text-xs">Taste</div>
-                                </div>
-                            </div>
-
+                        <ExpandableWineCard
+                            key={result.order}
+                            result={result}
+                            index={index}
+                            eventId={id}
+                            isAdmin={isAdmin}
+                        >
                             {/* Admin Edit Form */}
                             {isAdmin && (
                                 <div className="bg-stone-900/50 px-6 py-4 border-t border-stone-700">
@@ -145,7 +116,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
                                     />
                                 </div>
                             )}
-                        </div>
+                        </ExpandableWineCard>
                     ))}
                 </div>
             </div>

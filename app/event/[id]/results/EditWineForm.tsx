@@ -4,6 +4,7 @@ import { useFormStatus } from 'react-dom'
 import { useState, useRef, useActionState } from 'react'
 import { fetchWineImage, uploadImage } from '@/app/actions/images'
 import { updateWineDetails } from '@/app/actions/results'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 type EditWineFormProps = {
     eventId: string
@@ -18,6 +19,7 @@ export default function EditWineForm({ eventId, wineOrder, initialName, initialD
     const [imageUrl, setImageUrl] = useState(initialImageUrl || '')
     const [isFetching, setIsFetching] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
+    const { t } = useLanguage()
 
     const nameInputRef = useRef<HTMLInputElement>(null)
 
@@ -81,14 +83,15 @@ export default function EditWineForm({ eventId, wineOrder, initialName, initialD
                             </>
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-stone-600">
-                                <span className="text-xs">No Image</span>
+                                <span className="text-xs">{t.form.noImage}</span>
                             </div>
                         )}
                     </div>
-                    <label className="cursor-pointer bg-stone-800 hover:bg-stone-700 text-stone-400 text-xs py-1 px-2 rounded text-center transition-colors">
+                    {/* Upload functionality commented out - not going live yet */}
+                    {/* <label className="cursor-pointer bg-stone-800 hover:bg-stone-700 text-stone-400 text-xs py-1 px-2 rounded text-center transition-colors">
                         {isUploading ? 'Uploading...' : 'Upload'}
                         <input type="file" className="hidden" accept="image/*" onChange={handleUploadImage} disabled={isUploading} />
-                    </label>
+                    </label> */}
                 </div>
 
                 {/* Text Fields */}
@@ -99,7 +102,7 @@ export default function EditWineForm({ eventId, wineOrder, initialName, initialD
                                 ref={nameInputRef}
                                 type="text"
                                 name="name"
-                                placeholder="Wine Name (e.g. Château Margaux)"
+                                placeholder={t.form.wineNamePlaceholder}
                                 defaultValue={initialName || ''}
                                 className={`w-full px-3 py-2 bg-stone-800 border ${state?.errors?.name ? 'border-red-500' : 'border-stone-600'} rounded-md text-sm text-stone-100 focus:outline-none focus:border-amber-500`}
                             />
@@ -111,7 +114,7 @@ export default function EditWineForm({ eventId, wineOrder, initialName, initialD
                             disabled={isFetching}
                             className="px-3 py-2 bg-stone-800 text-amber-500 border border-amber-500/30 rounded-md hover:bg-stone-700 text-xs font-medium whitespace-nowrap"
                         >
-                            {isFetching ? 'Searching...' : 'Auto-Fetch'}
+                            {isFetching ? t.form.searching : t.form.autoFetch}
                         </button>
                     </div>
 
@@ -119,7 +122,7 @@ export default function EditWineForm({ eventId, wineOrder, initialName, initialD
                         <input
                             type="text"
                             name="description"
-                            placeholder="Description / Vintage"
+                            placeholder={t.form.descriptionPlaceholder}
                             defaultValue={initialDescription || ''}
                             className={`w-full px-3 py-2 bg-stone-800 border ${state?.errors?.description ? 'border-red-500' : 'border-stone-600'} rounded-md text-sm text-stone-100 focus:outline-none focus:border-amber-500`}
                         />
@@ -138,13 +141,14 @@ export default function EditWineForm({ eventId, wineOrder, initialName, initialD
 
 function SubmitButton() {
     const { pending } = useFormStatus()
+    const { t } = useLanguage()
     return (
         <button
             type="submit"
             disabled={pending}
             className="px-6 py-2 bg-amber-600 text-stone-900 text-sm font-bold rounded-md hover:bg-amber-500 transition-colors disabled:opacity-50"
         >
-            {pending ? 'Saving...' : 'Save Details'}
+            {pending ? t.form.saving : t.form.saveDetails}
         </button>
     )
 }
