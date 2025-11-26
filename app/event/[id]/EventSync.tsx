@@ -26,10 +26,17 @@ export default function EventSync({
             // Handle Presentation Mode
             if (state.presentationMode) {
                 if (!pathname.includes('/presentation')) {
-                    console.log('[EventSync] Redirecting to presentation due to presentationMode=true')
+                    console.log('[EventSync] Redirecting to presentation due to presentationMode=true', { eventId, pathname })
                     router.replace(`/event/${eventId}/presentation`)
                 }
                 return
+            } else {
+                // If presentation mode is OFF, but we are ON the presentation page, redirect back to event
+                if (pathname.includes('/presentation')) {
+                    console.log('[EventSync] Redirecting away from presentation due to presentationMode=false', { eventId, pathname })
+                    router.replace(`/event/${eventId}`)
+                    return
+                }
             }
 
             // Handle Wine Change (only for active events)

@@ -47,7 +47,8 @@ export default function EventClient({
     useEffect(() => {
         setGrade(initialGrade || { colorScore: 0, smellScore: 0, tasteScore: 0 })
         setSubmitted(!!initialGrade)
-    }, [event.currentWineOrder, initialGrade])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [event.currentWineOrder])
 
     const handleGradeChange = (field: keyof typeof grade, value: number) => {
         setGrade((prev) => ({ ...prev!, [field]: value }))
@@ -112,11 +113,10 @@ export default function EventClient({
                                 <button
                                     key={val}
                                     onClick={() => handleGradeChange('colorScore', val)}
-                                    disabled={submitted}
                                     className={`flex-1 py-3 rounded-lg font-bold text-lg transition-all ${grade!.colorScore === val
                                         ? 'bg-amber-600 text-stone-900 shadow-lg scale-105'
                                         : 'bg-stone-700 text-stone-400 hover:bg-stone-600'
-                                        } ${submitted ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        }`}
                                 >
                                     {val}
                                 </button>
@@ -132,11 +132,10 @@ export default function EventClient({
                                 <button
                                     key={val}
                                     onClick={() => handleGradeChange('smellScore', val)}
-                                    disabled={submitted}
                                     className={`py-3 rounded-lg font-bold text-lg transition-all ${grade!.smellScore === val
                                         ? 'bg-amber-600 text-stone-900 shadow-lg scale-105'
                                         : 'bg-stone-700 text-stone-400 hover:bg-stone-600'
-                                        } ${submitted ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        }`}
                                 >
                                     {val}
                                 </button>
@@ -152,11 +151,10 @@ export default function EventClient({
                                 <button
                                     key={val}
                                     onClick={() => handleGradeChange('tasteScore', val)}
-                                    disabled={submitted}
                                     className={`py-3 rounded-lg font-bold text-lg transition-all ${grade!.tasteScore === val
                                         ? 'bg-amber-600 text-stone-900 shadow-lg scale-105'
                                         : 'bg-stone-700 text-stone-400 hover:bg-stone-600'
-                                        } ${submitted ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        }`}
                                 >
                                     {val}
                                 </button>
@@ -167,10 +165,10 @@ export default function EventClient({
                     <div className="pt-4">
                         <button
                             onClick={handleSubmit}
-                            disabled={submitted || isPending || grade!.colorScore === 0 || grade!.smellScore === 0 || grade!.tasteScore === 0}
+                            disabled={isPending || grade!.colorScore === 0 || grade!.smellScore === 0 || grade!.tasteScore === 0}
                             className="w-full py-4 bg-amber-500 text-stone-900 font-bold rounded-xl shadow-lg hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:-translate-y-0.5"
                         >
-                            {submitted ? t.event.alreadyGraded : isPending ? `${t.event.submitGrade}...` : t.event.submitGrade}
+                            {isPending ? `${t.event.submitGrade}...` : submitted ? t.event.updateGrade : t.event.submitGrade}
                         </button>
                     </div>
                 </div>

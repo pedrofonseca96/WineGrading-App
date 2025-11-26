@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { updateRevealCount, getPresentationState } from '@/app/actions/presentation'
+import { updateRevealCount, getPresentationState, finishPresentation } from '@/app/actions/presentation'
 import { getWineDetails } from '@/app/actions/wine'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 type Result = {
     order: number
@@ -31,6 +32,7 @@ export default function PresentationClient({ results, eventId, isCreator, initia
 
     const [revealedCount, setRevealedCount] = useState(initialRevealCount)
     const [currentWineDetails, setCurrentWineDetails] = useState<Result['wine'] | null>(null)
+    const { t } = useLanguage()
 
     // Polling for presentation state (reveal count)
     useEffect(() => {
@@ -92,12 +94,12 @@ export default function PresentationClient({ results, eventId, isCreator, initia
                 {!isFinished && currentReveal && (
                     <div key={currentReveal.order} className="animate-in fade-in zoom-in duration-1000 slide-in-from-bottom-10 fill-mode-forwards">
                         <div className="mb-4 text-amber-500 font-serif text-2xl tracking-widest uppercase animate-in fade-in slide-in-from-top-4 duration-700 delay-100 fill-mode-forwards">
-                            Rank #{getRank(revealedCount)}
+                            {t.presentation.rank}{getRank(revealedCount)}
                         </div>
 
                         <div className="bg-stone-900/80 backdrop-blur-md p-12 rounded-3xl border border-amber-500/30 shadow-2xl shadow-amber-900/20 animate-in fade-in zoom-in-95 duration-700 delay-200 fill-mode-forwards">
                             <h1 className="text-6xl md:text-8xl font-bold text-white mb-6 font-serif animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300 fill-mode-forwards">
-                                {displayWine?.name || `Wine #${currentReveal.order}`}
+                                {displayWine?.name || `${t.event.wineNumber}${currentReveal.order}`}
                             </h1>
 
                             {displayWine?.imageUrl && (
@@ -111,28 +113,28 @@ export default function PresentationClient({ results, eventId, isCreator, initia
                             )}
 
                             <p className="text-2xl text-stone-400 mb-12 italic animate-in fade-in slide-in-from-bottom-2 duration-700 delay-700 fill-mode-forwards">
-                                {displayWine?.description || 'Mystery Wine'}
+                                {displayWine?.description || t.presentation.mysteryWine}
                             </p>
 
                             <div className="flex justify-center items-end gap-4 animate-in fade-in zoom-in duration-700 delay-1000 fill-mode-forwards">
                                 <div className="text-9xl font-bold text-amber-500 leading-none">
                                     {currentReveal.totalScore}
                                 </div>
-                                <div className="text-xl text-stone-500 font-medium mb-4">pts</div>
+                                <div className="text-xl text-stone-500 font-medium mb-4">{t.presentation.points}</div>
                             </div>
 
                             <div className="grid grid-cols-3 gap-8 mt-12 max-w-2xl mx-auto border-t border-stone-800 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-1200 fill-mode-forwards">
                                 <div>
                                     <div className="text-3xl font-bold text-stone-300">{currentReveal.colorScore}</div>
-                                    <div className="text-stone-500 uppercase text-sm tracking-wider mt-1">Color</div>
+                                    <div className="text-stone-500 uppercase text-sm tracking-wider mt-1">{t.event.color}</div>
                                 </div>
                                 <div>
                                     <div className="text-3xl font-bold text-stone-300">{currentReveal.smellScore}</div>
-                                    <div className="text-stone-500 uppercase text-sm tracking-wider mt-1">Smell</div>
+                                    <div className="text-stone-500 uppercase text-sm tracking-wider mt-1">{t.event.smell}</div>
                                 </div>
                                 <div>
                                     <div className="text-3xl font-bold text-stone-300">{currentReveal.tasteScore}</div>
-                                    <div className="text-stone-500 uppercase text-sm tracking-wider mt-1">Taste</div>
+                                    <div className="text-stone-500 uppercase text-sm tracking-wider mt-1">{t.event.taste}</div>
                                 </div>
                             </div>
                         </div>
@@ -140,14 +142,27 @@ export default function PresentationClient({ results, eventId, isCreator, initia
                 )}
 
                 {isFinished && (
-                    <div className="text-center animate-in fade-in zoom-in duration-1000">
-                        <h1 className="text-6xl font-serif font-bold text-amber-500 mb-8">Tasting Complete</h1>
-                        <Link
-                            href="/dashboard"
-                            className="inline-block px-8 py-4 bg-stone-800 text-stone-300 rounded-full hover:bg-stone-700 transition-colors"
-                        >
-                            Return to Dashboard
-                        </Link>
+                    <div className="text-center animate-in fade-in zoom-in duration-1000 space-y-6">
+                        <h1 className="text-6xl font-serif font-bold text-amber-500 mb-8">{t.presentation.tastingComplete}</h1>
+
+                        {isCreator ? (
+                            <button
+                                onClick={async () => {
+                                    await finishPresentation(eventId)
+                                    window.location.href = '/dashboard'
+                                }}
+                                className="inline-block px-8 py-4 bg-amber-600 text-stone-900 font-bold rounded-full hover:bg-amber-500 transition-colors shadow-lg"
+                            >
+                                {t.presentation.finishPresentation}
+                            </button>
+                        ) : (
+                            <Link
+                                href="/dashboard"
+                                className="inline-block px-8 py-4 bg-stone-800 text-stone-300 rounded-full hover:bg-stone-700 transition-colors"
+                            >
+                                {t.presentation.returnToDashboard}
+                            </Link>
+                        )}
                     </div>
                 )}
 
@@ -158,7 +173,7 @@ export default function PresentationClient({ results, eventId, isCreator, initia
                                 onClick={handleNext}
                                 className="px-8 py-4 bg-amber-600 text-stone-900 font-bold rounded-full shadow-lg hover:bg-amber-500 transition-all transform hover:scale-105"
                             >
-                                Reveal Next
+                                {t.presentation.revealNext}
                             </button>
                         )}
                     </div>

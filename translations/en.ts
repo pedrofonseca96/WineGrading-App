@@ -58,6 +58,7 @@ export const translations: Translations = {
         waitingForGrades: 'Waiting for grades...',
         gradeThisWine: 'Grade this wine',
         alreadyGraded: 'Already graded this wine',
+        updateGrade: 'Update Grade',
         viewGrade: 'View Grade',
     },
     results: {
@@ -85,6 +86,12 @@ export const translations: Translations = {
         previousWine: 'Previous Wine',
         finishPresentation: 'Finish Presentation',
         wineDetails: 'Wine Details',
+        rank: 'Rank #',
+        mysteryWine: 'Mystery Wine',
+        points: 'pts',
+        tastingComplete: 'Tasting Complete',
+        returnToDashboard: 'Return to Dashboard',
+        revealNext: 'Reveal Next',
     },
     form: {
         wineName: 'Wine Name',

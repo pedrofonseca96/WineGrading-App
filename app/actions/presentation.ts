@@ -19,6 +19,14 @@ export async function updateRevealCount(eventId: string, count: number) {
     revalidatePath(`/event/${eventId}`, 'layout')
 }
 
+export async function finishPresentation(eventId: string) {
+    await prisma.event.update({
+        where: { id: eventId },
+        data: { presentationMode: false }
+    })
+    revalidatePath(`/event/${eventId}`, 'layout')
+}
+
 export async function getPresentationState(eventId: string) {
     const event = await prisma.event.findUnique({
         where: { id: eventId },

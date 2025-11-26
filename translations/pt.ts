@@ -56,6 +56,7 @@ export const translations = {
         waitingForGrades: 'À espera de avaliações...',
         gradeThisWine: 'Avalie este vinho',
         alreadyGraded: 'Já avaliou este vinho',
+        updateGrade: 'Atualizar Avaliação',
         viewGrade: 'Ver Avaliação',
     },
     results: {
@@ -83,6 +84,12 @@ export const translations = {
         previousWine: 'Vinho Anterior',
         finishPresentation: 'Terminar Apresentação',
         wineDetails: 'Detalhes do Vinho',
+        rank: 'Classificação #',
+        mysteryWine: 'Vinho Mistério',
+        points: 'pts',
+        tastingComplete: 'Prova Terminada',
+        returnToDashboard: 'Voltar ao Painel',
+        revealNext: 'Revelar Seguinte',
     },
     form: {
         wineName: 'Nome do Vinho',

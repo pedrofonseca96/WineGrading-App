@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db'
 import { verifySession } from '@/lib/session'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import PresentationClient from './PresentationClient'
 
 async function getResults(eventId: string) {
@@ -60,6 +60,11 @@ export default async function PresentationPage({ params }: { params: Promise<{ i
     }
 
     const isCreator = event.creatorId === session.userId
+
+    if (!event.presentationMode) {
+        redirect(`/event/${id}`)
+    }
+
     const results = await getResults(id)
 
     return (

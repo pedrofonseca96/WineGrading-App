@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db'
 import { verifySession } from '@/lib/session'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import EventClient from './EventClient'
 import EventSync from './EventSync'
 
@@ -16,11 +16,16 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
             status: true,
             currentWineOrder: true,
             creatorId: true,
+            presentationMode: true,
         }
     })
 
     if (!event) {
         notFound()
+    }
+
+    if (event.presentationMode) {
+        redirect(`/event/${id}/presentation`)
     }
 
     const userGrade = await prisma.grade.findUnique({
