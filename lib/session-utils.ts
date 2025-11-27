@@ -4,7 +4,12 @@ const key = new TextEncoder().encode(process.env.SESSION_SECRET || 'default_secr
 
 export const cookie = {
     name: 'session',
-    options: { httpOnly: true, secure: false, sameSite: 'lax' as const, path: '/' },
+    options: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax' as const,
+        path: '/'
+    },
     duration: 24 * 60 * 60 * 1000,
 }
 
