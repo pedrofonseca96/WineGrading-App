@@ -53,3 +53,9 @@ model Grade {
 
   @@unique([userId, eventId, wineOrder])
 }
+
+model RateLimit {
+  key       String   @id
+  count     Int      @default(0)
+  expiresAt DateTime
+}

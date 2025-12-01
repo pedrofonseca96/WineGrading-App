@@ -5,6 +5,8 @@ import { prisma } from '@/lib/db'
 import { createSession, deleteSession } from '@/lib/session'
 import { redirect } from 'next/navigation'
 import bcrypt from 'bcryptjs'
+import { headers } from 'next/headers'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 const loginSchema = z.object({
     username: z.string().min(1, 'Username is required'),
@@ -17,6 +19,17 @@ const registerSchema = z.object({
 })
 
 export async function login(prevState: any, formData: FormData) {
+    const ip = (await headers()).get('x-forwarded-for') || 'unknown'
+    const limit = await checkRateLimit(`login:${ip}`, 5, 60)
+
+    if (!limit.success) {
+        return {
+            errors: {
+                root: ['Too many attempts. Please try again later.'],
+            },
+        }
+    }
+
     const result = loginSchema.safeParse(Object.fromEntries(formData))
 
     if (!result.success) {
@@ -44,6 +57,17 @@ export async function login(prevState: any, formData: FormData) {
 }
 
 export async function register(prevState: any, formData: FormData) {
+    const ip = (await headers()).get('x-forwarded-for') || 'unknown'
+    const limit = await checkRateLimit(`register:${ip}`, 5, 60)
+
+    if (!limit.success) {
+        return {
+            errors: {
+                root: ['Too many attempts. Please try again later.'],
+            },
+        }
+    }
+
     const result = registerSchema.safeParse(Object.fromEntries(formData))
 
     if (!result.success) {

@@ -1,53 +1,42 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { getEventSyncState } from '@/app/actions/sync'
+import { useEventStream } from '@/hooks/useEventStream'
 
-export default function EventSync({
-    eventId,
-    currentWineOrder
-}: {
+interface EventSyncProps {
     eventId: string
-    currentWineOrder: number
-}) {
+    currentStatus: string
+    currentPresentationMode: boolean
+}
+
+export default function EventSync({ eventId, currentStatus, currentPresentationMode }: EventSyncProps) {
     const router = useRouter()
     const pathname = usePathname()
-    const [lastWineOrder, setLastWineOrder] = useState(currentWineOrder)
+    const eventState = useEventStream(eventId)
 
     useEffect(() => {
-        // Don't sync if we're already on presentation page
-        if (pathname.includes('/presentation')) return
+        if (!eventState) return
 
-        const interval = setInterval(async () => {
-            const state = await getEventSyncState(eventId)
-            if (!state) return
+        // Redirect to presentation if mode is on and we're not there
+        if (eventState.presentationMode && !pathname.includes('/presentation')) {
+            router.push(`/event/${eventId}/presentation`)
+            return
+        }
 
-            // Handle Presentation Mode
-            if (state.presentationMode) {
-                if (!pathname.includes('/presentation')) {
-                    console.log('[EventSync] Redirecting to presentation due to presentationMode=true', { eventId, pathname })
-                    router.replace(`/event/${eventId}/presentation`)
-                }
-                return
-            } else {
-                // If presentation mode is OFF, but we are ON the presentation page, redirect back to event
-                if (pathname.includes('/presentation')) {
-                    console.log('[EventSync] Redirecting away from presentation due to presentationMode=false', { eventId, pathname })
-                    router.replace(`/event/${eventId}`)
-                    return
-                }
-            }
+        // Redirect to results if event is finished
+        if (eventState.status === 'finished' && currentStatus !== 'finished') {
+            router.refresh()
+            return
+        }
 
-            // Handle Wine Change (only for active events)
-            if (state.status === 'active' && state.currentWineOrder !== lastWineOrder) {
-                setLastWineOrder(state.currentWineOrder)
-                router.refresh()
-            }
-        }, 2000)
+        // If presentation mode is turned OFF, but we are on the presentation page, go back
+        if (!eventState.presentationMode && pathname.includes('/presentation')) {
+            router.push(`/event/${eventId}`)
+            return
+        }
 
-        return () => clearInterval(interval)
-    }, [eventId, lastWineOrder, pathname, router])
+    }, [eventState, eventId, pathname, router, currentStatus])
 
     return null
 }

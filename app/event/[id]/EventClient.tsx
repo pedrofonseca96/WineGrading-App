@@ -5,6 +5,7 @@ import { submitGrade, nextWine, previousWine, finishEvent } from '@/app/actions/
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useEventStream } from '@/hooks/useEventStream'
 
 type EventData = {
     id: string
@@ -34,14 +35,14 @@ export default function EventClient({
     const [grade, setGrade] = useState(initialGrade || { colorScore: 0, smellScore: 0, tasteScore: 0 })
     const [submitted, setSubmitted] = useState(!!initialGrade)
     const { t } = useLanguage()
+    const eventState = useEventStream(event.id)
 
-    // Poll for updates every 5 seconds
+    // Update local state when server state changes
     useEffect(() => {
-        const interval = setInterval(() => {
+        if (eventState && eventState.currentWineOrder !== event.currentWineOrder) {
             router.refresh()
-        }, 5000)
-        return () => clearInterval(interval)
-    }, [router])
+        }
+    }, [eventState, event.currentWineOrder, router])
 
     // Reset local state when wine changes
     useEffect(() => {
