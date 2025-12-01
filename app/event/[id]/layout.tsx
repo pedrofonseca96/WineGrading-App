@@ -11,14 +11,21 @@ export default async function EventLayout({
     const { id } = await params
     const event = await prisma.event.findUnique({
         where: { id },
-        select: { currentWineOrder: true },
+        select: {
+            status: true,
+            presentationMode: true
+        },
     })
 
     if (!event) return <>{children}</>
 
     return (
         <>
-            <EventSync eventId={id} currentWineOrder={event.currentWineOrder} />
+            <EventSync
+                eventId={id}
+                currentStatus={event.status}
+                currentPresentationMode={event.presentationMode}
+            />
             {children}
         </>
     )

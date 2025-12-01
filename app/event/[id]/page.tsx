@@ -2,7 +2,6 @@ import { prisma } from '@/lib/db'
 import { verifySession } from '@/lib/session'
 import { notFound, redirect } from 'next/navigation'
 import EventClient from './EventClient'
-import EventSync from './EventSync'
 
 export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -40,7 +39,6 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
     return (
         <div className="min-h-screen text-stone-100 p-4 md:p-8">
-            <EventSync eventId={event.id} currentWineOrder={event.currentWineOrder} />
             <EventClient
                 event={event}
                 userId={session.userId}
