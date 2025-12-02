@@ -9,8 +9,9 @@ const UpdateWineSchema = z.object({
     eventId: z.string(),
     wineOrder: z.coerce.number(),
     name: z.string().min(1, "Name is required"),
-    description: z.string().optional(),
-    imageUrl: z.string().optional(),
+    description: z.string().nullable().optional(),
+    imageUrl: z.string().nullable().optional(),
+    broughtBy: z.string().nullable().optional(),
 })
 
 export async function updateWineDetails(prevState: any, formData: FormData) {
@@ -22,6 +23,7 @@ export async function updateWineDetails(prevState: any, formData: FormData) {
         name: formData.get('name'),
         description: formData.get('description'),
         imageUrl: formData.get('imageUrl'),
+        broughtBy: formData.get('broughtBy'),
     })
 
     if (!validatedFields.success) {
@@ -30,7 +32,7 @@ export async function updateWineDetails(prevState: any, formData: FormData) {
         }
     }
 
-    const { eventId, wineOrder, name, description, imageUrl } = validatedFields.data
+    const { eventId, wineOrder, name, description, imageUrl, broughtBy } = validatedFields.data
 
     // Verify ownership
     const event = await prisma.event.findUnique({ where: { id: eventId } })
@@ -53,7 +55,8 @@ export async function updateWineDetails(prevState: any, formData: FormData) {
                 data: {
                     name,
                     description,
-                    imageUrl: imageUrl || null
+                    imageUrl: imageUrl || null,
+                    broughtBy: broughtBy || null
                 },
             })
         } else {
@@ -63,7 +66,8 @@ export async function updateWineDetails(prevState: any, formData: FormData) {
                     order: wineOrder,
                     name,
                     description,
-                    imageUrl: imageUrl || null
+                    imageUrl: imageUrl || null,
+                    broughtBy: broughtBy || null
                 }
             })
         }

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import EditWineForm from './EditWineForm'
 import StartPresentationButton from './StartPresentationButton'
 import ExpandableWineCard from './ExpandableWineCard'
+import Scorecard from './Scorecard'
 
 async function getResults(eventId: string) {
     const grades = await prisma.grade.findMany({
@@ -113,12 +114,45 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
                                         initialName={result.wine?.name}
                                         initialDescription={result.wine?.description}
                                         initialImageUrl={result.wine?.imageUrl}
+                                        initialBroughtBy={result.wine?.broughtBy}
                                     />
                                 </div>
                             )}
                         </ExpandableWineCard>
                     ))}
                 </div>
+
+                {/* Only show Scorecard when presentation is finished */}
+                {(event?.presentationRevealCount || 0) > results.length && (
+                    <div className="mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <Scorecard
+                            wines={results.map(r => ({
+                                order: r.order,
+                                name: r.wine?.name || null,
+                                broughtBy: r.wine?.broughtBy || null,
+                                totalScore: r.totalScore
+                            }))}
+                            users={await prisma.user.findMany({
+                                where: {
+                                    grades: {
+                                        some: { eventId: id }
+                                    }
+                                },
+                                select: { id: true, username: true }
+                            })}
+                            grades={await prisma.grade.findMany({
+                                where: { eventId: id },
+                                select: { userId: true, wineOrder: true, colorScore: true, smellScore: true, tasteScore: true }
+                            }).then(grades => grades.map(g => ({
+                                userId: g.userId,
+                                wineOrder: g.wineOrder,
+                                totalScore: g.colorScore + g.smellScore + g.tasteScore
+                            })))}
+                            isFinished={true}
+                            revealedWineOrders={results.map(r => r.order)}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     )

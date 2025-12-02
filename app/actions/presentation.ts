@@ -22,9 +22,21 @@ export async function updateRevealCount(eventId: string, count: number) {
 export async function finishPresentation(eventId: string) {
     await prisma.event.update({
         where: { id: eventId },
-        data: { presentationMode: false }
+        data: { presentationMode: false, status: 'finished' }
     })
     revalidatePath(`/event/${eventId}`, 'layout')
+}
+
+export async function updateBroughtBy(eventId: string, wineOrder: number, broughtBy: string) {
+    await prisma.wine.updateMany({
+        where: {
+            eventId: eventId,
+            order: wineOrder
+        },
+        data: {
+            broughtBy: broughtBy
+        }
+    })
 }
 
 export async function getPresentationState(eventId: string) {

@@ -11,7 +11,8 @@ export async function getWineDetails(eventId: string, wineOrder: number) {
         select: {
             name: true,
             description: true,
-            imageUrl: true
+            imageUrl: true,
+            broughtBy: true
         }
     })
     return wine

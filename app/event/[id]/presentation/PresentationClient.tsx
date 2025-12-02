@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { updateRevealCount, getPresentationState, finishPresentation } from '@/app/actions/presentation'
+import { updateRevealCount, getPresentationState, finishPresentation, updateBroughtBy } from '@/app/actions/presentation'
 import { getWineDetails } from '@/app/actions/wine'
 import { useLanguage } from '@/contexts/LanguageContext'
+
+import Scorecard from '../results/Scorecard'
 
 type Result = {
     order: number
@@ -16,6 +18,7 @@ type Result = {
         name: string | null
         description: string | null
         imageUrl: string | null
+        broughtBy: string | null
     }
 }
 
@@ -24,15 +27,23 @@ interface PresentationClientProps {
     eventId: string
     isCreator: boolean
     initialRevealCount: number
+    users: { id: string; username: string }[]
+    grades: { userId: string; wineOrder: number; totalScore: number }[]
 }
 
-export default function PresentationClient({ results, eventId, isCreator, initialRevealCount }: PresentationClientProps) {
+export default function PresentationClient({ results, eventId, isCreator, initialRevealCount, users, grades }: PresentationClientProps) {
     // Sort results by score ascending (lowest to highest)
     const sortedResults = [...results].sort((a, b) => a.totalScore - b.totalScore)
 
     const [revealedCount, setRevealedCount] = useState(initialRevealCount)
     const [currentWineDetails, setCurrentWineDetails] = useState<Result['wine'] | null>(null)
+    const [showBroughtBy, setShowBroughtBy] = useState(false)
     const { t } = useLanguage()
+
+    // Reset showBroughtBy when moving to next wine
+    useEffect(() => {
+        setShowBroughtBy(false)
+    }, [revealedCount])
 
     // Polling for presentation state (reveal count)
     useEffect(() => {
@@ -48,8 +59,11 @@ export default function PresentationClient({ results, eventId, isCreator, initia
         return () => clearInterval(interval)
     }, [eventId, isCreator, revealedCount])
 
-    const currentReveal = revealedCount < sortedResults.length ? sortedResults[revealedCount] : null
-    const isFinished = revealedCount === sortedResults.length
+    // If revealedCount is 0, we are in "start" mode (blank screen)
+    // If revealedCount is 1, we show the first wine (index 0)
+    const currentRevealIndex = revealedCount - 1
+    const currentReveal = currentRevealIndex >= 0 && currentRevealIndex < sortedResults.length ? sortedResults[currentRevealIndex] : null
+    const isFinished = revealedCount > sortedResults.length
 
     // Poll for current wine details (image, name, description)
     useEffect(() => {
@@ -75,10 +89,10 @@ export default function PresentationClient({ results, eventId, isCreator, initia
     const displayWine = currentWineDetails || currentReveal?.wine
 
     // Calculate rank (reverse index)
-    const getRank = (index: number) => sortedResults.length - index
+    const getRank = (index: number) => sortedResults.length - (index - 1)
 
     const handleNext = async () => {
-        if (revealedCount < sortedResults.length) {
+        if (revealedCount <= sortedResults.length) {
             const newCount = revealedCount + 1
             setRevealedCount(newCount) // Optimistic update
             await updateRevealCount(eventId, newCount)
@@ -91,6 +105,17 @@ export default function PresentationClient({ results, eventId, isCreator, initia
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-900/20 via-stone-950 to-stone-950 pointer-events-none" />
 
             <div className="z-10 w-full max-w-5xl space-y-12 text-center">
+                {!isFinished && !currentReveal && (
+                    <div className="animate-in fade-in zoom-in duration-1000 flex flex-col items-center justify-center h-[60vh]">
+                        <h1 className="text-6xl md:text-8xl font-serif font-bold text-amber-500 mb-8 animate-pulse">
+                            {t.presentation.readyToReveal}
+                        </h1>
+                        <p className="text-2xl text-stone-400 italic">
+                            {t.presentation.waitingForAdmin}
+                        </p>
+                    </div>
+                )}
+
                 {!isFinished && currentReveal && (
                     <div key={currentReveal.order} className="animate-in fade-in zoom-in duration-1000 slide-in-from-bottom-10 fill-mode-forwards">
                         <div className="mb-4 text-amber-500 font-serif text-2xl tracking-widest uppercase animate-in fade-in slide-in-from-top-4 duration-700 delay-100 fill-mode-forwards">
@@ -112,9 +137,56 @@ export default function PresentationClient({ results, eventId, isCreator, initia
                                 </div>
                             )}
 
-                            <p className="text-2xl text-stone-400 mb-12 italic animate-in fade-in slide-in-from-bottom-2 duration-700 delay-700 fill-mode-forwards">
+                            <p className="text-2xl text-stone-400 mb-8 italic animate-in fade-in slide-in-from-bottom-2 duration-700 delay-700 fill-mode-forwards">
                                 {displayWine?.description || t.presentation.mysteryWine}
                             </p>
+
+                            {/* Brought By Section */}
+                            <div className="mb-12 animate-in fade-in slide-in-from-bottom-2 duration-700 delay-900 fill-mode-forwards min-h-[5rem] flex flex-col items-center justify-center gap-3">
+                                <span className="text-stone-500 uppercase text-sm tracking-widest">{t.presentation.broughtBy}</span>
+
+                                {displayWine?.broughtBy ? (
+                                    // If name exists, show Reveal/Name logic
+                                    showBroughtBy ? (
+                                        <span className="text-amber-400 font-bold text-3xl animate-in fade-in zoom-in duration-300 font-serif">
+                                            {displayWine.broughtBy}
+                                        </span>
+                                    ) : (
+                                        <button
+                                            onClick={() => setShowBroughtBy(true)}
+                                            className="px-6 py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 text-sm font-medium rounded-full transition-all border border-stone-700 hover:border-amber-500/50 hover:text-amber-500"
+                                        >
+                                            {t.presentation.reveal}
+                                        </button>
+                                    )
+                                ) : isCreator ? (
+                                    // If name missing and is admin, show Input
+                                    <form
+                                        action={async (formData) => {
+                                            await updateBroughtBy(eventId, currentReveal.order, formData.get('broughtBy') as string)
+                                        }}
+                                        className="flex items-center gap-6 bg-stone-900/50 p-3 rounded-xl border border-stone-800"
+                                    >
+                                        <input
+                                            name="broughtBy"
+                                            type="text"
+                                            placeholder="Who brought this?"
+                                            className="bg-transparent border-none text-stone-200 placeholder:text-stone-600 focus:ring-0 text-lg px-2 w-56 text-center font-serif"
+                                            autoFocus
+                                            autoComplete="off"
+                                        />
+                                        <button
+                                            type="submit"
+                                            className="bg-amber-600 hover:bg-amber-500 text-stone-900 text-sm font-bold px-6 py-2 rounded-lg transition-colors shadow-lg shadow-amber-900/20"
+                                        >
+                                            Save
+                                        </button>
+                                    </form>
+                                ) : (
+                                    // If name missing and not admin
+                                    <span className="text-stone-600 italic text-lg">???</span>
+                                )}
+                            </div>
 
                             <div className="flex justify-center items-end gap-4 animate-in fade-in zoom-in duration-700 delay-1000 fill-mode-forwards">
                                 <div className="text-9xl font-bold text-amber-500 leading-none">
@@ -142,8 +214,23 @@ export default function PresentationClient({ results, eventId, isCreator, initia
                 )}
 
                 {isFinished && (
-                    <div className="text-center animate-in fade-in zoom-in duration-1000 space-y-6">
+                    <div className="text-center animate-in fade-in zoom-in duration-1000 space-y-6 w-full max-w-6xl mx-auto">
                         <h1 className="text-6xl font-serif font-bold text-amber-500 mb-8">{t.presentation.tastingComplete}</h1>
+
+                        <div className="mb-12">
+                            <Scorecard
+                                wines={results.map(r => ({
+                                    order: r.order,
+                                    name: r.wine?.name || null,
+                                    broughtBy: r.wine?.broughtBy || null,
+                                    totalScore: r.totalScore
+                                }))}
+                                users={users}
+                                grades={grades}
+                                isFinished={true}
+                                revealedWineOrders={results.map(r => r.order)}
+                            />
+                        </div>
 
                         {isCreator ? (
                             <button

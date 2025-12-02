@@ -18,7 +18,7 @@ async function getResults(eventId: string) {
         colorScore: number
         smellScore: number
         tasteScore: number
-        wine?: { name: string | null; description: string | null; imageUrl: string | null }
+        wine?: { name: string | null; description: string | null; imageUrl: string | null; broughtBy: string | null }
     }>()
 
     grades.forEach((grade) => {
@@ -42,7 +42,8 @@ async function getResults(eventId: string) {
             results.get(wine.order)!.wine = {
                 name: wine.name,
                 description: wine.description,
-                imageUrl: wine.imageUrl
+                imageUrl: wine.imageUrl,
+                broughtBy: wine.broughtBy
             }
         }
     })
@@ -67,12 +68,33 @@ export default async function PresentationPage({ params }: { params: Promise<{ i
 
     const results = await getResults(id)
 
+    // Fetch data for Scorecard
+    const users = await prisma.user.findMany({
+        where: {
+            grades: {
+                some: { eventId: id }
+            }
+        },
+        select: { id: true, username: true }
+    })
+
+    const grades = await prisma.grade.findMany({
+        where: { eventId: id },
+        select: { userId: true, wineOrder: true, colorScore: true, smellScore: true, tasteScore: true }
+    }).then(grades => grades.map(g => ({
+        userId: g.userId,
+        wineOrder: g.wineOrder,
+        totalScore: g.colorScore + g.smellScore + g.tasteScore
+    })))
+
     return (
         <PresentationClient
             results={results}
             eventId={id}
             isCreator={isCreator}
             initialRevealCount={event.presentationRevealCount}
+            users={users}
+            grades={grades}
         />
     )
 }

@@ -36,6 +36,7 @@ model Wine {
   description String?
   order       Int // The order in the blind tasting (1, 2, 3...)
   imageUrl    String?
+  broughtBy   String?
   eventId     String
   event       Event   @relation(fields: [eventId], references: [id])
 }

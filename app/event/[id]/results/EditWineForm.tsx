@@ -12,9 +12,10 @@ type EditWineFormProps = {
     initialName?: string | null
     initialDescription?: string | null
     initialImageUrl?: string | null
+    initialBroughtBy?: string | null
 }
 
-export default function EditWineForm({ eventId, wineOrder, initialName, initialDescription, initialImageUrl }: EditWineFormProps) {
+export default function EditWineForm({ eventId, wineOrder, initialName, initialDescription, initialImageUrl, initialBroughtBy }: EditWineFormProps) {
     const [state, action] = useActionState(updateWineDetails, undefined)
     const [imageUrl, setImageUrl] = useState(initialImageUrl || '')
     const [isFetching, setIsFetching] = useState(false)
@@ -127,6 +128,8 @@ export default function EditWineForm({ eventId, wineOrder, initialName, initialD
                             className={`w-full px-3 py-2 bg-stone-800 border ${state?.errors?.description ? 'border-red-500' : 'border-stone-600'} rounded-md text-sm text-stone-100 focus:outline-none focus:border-amber-500`}
                         />
                     </div>
+
+
 
                     <input type="hidden" name="imageUrl" value={imageUrl} />
 
