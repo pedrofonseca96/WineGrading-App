@@ -2,7 +2,7 @@
 
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
-import * as cheerio from 'cheerio'
+
 
 export async function uploadImage(formData: FormData) {
     const file = formData.get('file') as File
@@ -29,29 +29,38 @@ export async function uploadImage(formData: FormData) {
 }
 
 export async function fetchWineImage(query: string) {
-    try {
-        // Attempt to scrape Bing Images (simple, brittle, but works for demo)
-        // In production, use a real API like Google Custom Search or Bing Search API
-        const searchUrl = `https://www.bing.com/images/search?q=${encodeURIComponent(query + ' wine bottle')}&first=1`
+    const apiKey = process.env.SERPER_API_KEY
 
-        const response = await fetch(searchUrl, {
+    if (!apiKey) {
+        console.warn('SERPER_API_KEY is not set. Image fetching disabled.')
+        return null
+    }
+
+    try {
+        const response = await fetch('https://google.serper.dev/images', {
+            method: 'POST',
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            }
+                'X-API-KEY': apiKey,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                q: query + ' wine bottle',
+                gl: 'us',
+                hl: 'en'
+            })
         })
 
-        const html = await response.text()
-        const $ = cheerio.load(html)
+        if (!response.ok) {
+            console.error('Serper API error:', await response.text())
+            // Fallback? No, just return null for now.
+            return null
+        }
 
-        // Bing stores images in 'murl' or similar attributes in the HTML
-        // This selector might need adjustment as Bing changes their layout
-        // Looking for the first image result
-        const imgElement = $('a.iusc').first()
-        const m = imgElement.attr('m')
+        const data = await response.json()
 
-        if (m) {
-            const metadata = JSON.parse(m)
-            return metadata.murl // The direct image URL
+        // Serper returns { images: [ { imageUrl: '...', ... } ] }
+        if (data.images && data.images.length > 0) {
+            return data.images[0].imageUrl
         }
 
         return null
