@@ -74,8 +74,7 @@ export async function updateWineDetails(prevState: unknown, formData: FormData) 
 
         revalidatePath(`/event`)
         return { success: true }
-    } catch (error) {
-        console.error('Update wine error:', error)
+    } catch {
         return {
             message: 'Database Error: Failed to update wine details.',
         }

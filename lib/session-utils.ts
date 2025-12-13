@@ -1,6 +1,10 @@
 import { SignJWT, jwtVerify } from 'jose'
 
-const key = new TextEncoder().encode(process.env.SESSION_SECRET || 'default_secret_key_change_me')
+const secret = process.env.SESSION_SECRET
+if (!secret && process.env.NODE_ENV === 'production') {
+    throw new Error('SESSION_SECRET environment variable is required in production')
+}
+const key = new TextEncoder().encode(secret || 'dev_secret_key_not_for_production')
 
 export const cookie = {
     name: 'session',
