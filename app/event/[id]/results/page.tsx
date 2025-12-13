@@ -74,6 +74,15 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
 
     const isAdmin = event?.creatorId === session.userId
 
+    const users = await prisma.user.findMany({
+        where: {
+            grades: {
+                some: { eventId: id }
+            }
+        },
+        select: { id: true, username: true }
+    })
+
     return (
         <div className="min-h-screen text-stone-100 p-8">
             <div className="max-w-4xl mx-auto">
@@ -114,6 +123,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
                                         initialDescription={result.wine?.description}
                                         initialImageUrl={result.wine?.imageUrl}
                                         initialBroughtBy={result.wine?.broughtBy}
+                                        users={users}
                                     />
                                 </div>
                             )}
@@ -131,14 +141,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
                                 broughtBy: r.wine?.broughtBy || null,
                                 totalScore: r.totalScore
                             }))}
-                            users={await prisma.user.findMany({
-                                where: {
-                                    grades: {
-                                        some: { eventId: id }
-                                    }
-                                },
-                                select: { id: true, username: true }
-                            })}
+                            users={users}
                             grades={await prisma.grade.findMany({
                                 where: { eventId: id },
                                 select: { userId: true, wineOrder: true, colorScore: true, smellScore: true, tasteScore: true }

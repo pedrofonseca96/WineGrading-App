@@ -171,14 +171,17 @@ export default function PresentationClient({ results, eventId, isCreator, initia
                                         }}
                                         className="flex items-center gap-6 bg-stone-900/50 p-3 rounded-xl border border-stone-800"
                                     >
-                                        <input
+                                        <select
                                             name="broughtBy"
-                                            type="text"
-                                            placeholder="Who brought this?"
-                                            className="bg-transparent border-none text-stone-200 placeholder:text-stone-600 focus:ring-0 text-lg px-2 w-56 text-center font-serif"
+                                            defaultValue=""
+                                            className="bg-stone-900 border border-stone-700 text-stone-200 focus:ring-amber-500 focus:border-amber-500 text-lg px-4 py-2 rounded-lg w-64 text-center font-serif appearance-none cursor-pointer"
                                             autoFocus
-                                            autoComplete="off"
-                                        />
+                                        >
+                                            <option value="" disabled>Who brought this?</option>
+                                            {users.map(user => (
+                                                <option key={user.id} value={user.username}>{user.username}</option>
+                                            ))}
+                                        </select>
                                         <button
                                             type="submit"
                                             className="bg-amber-600 hover:bg-amber-500 text-stone-900 text-sm font-bold px-6 py-2 rounded-lg transition-colors shadow-lg shadow-amber-900/20"

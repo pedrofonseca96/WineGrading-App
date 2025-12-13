@@ -13,9 +13,10 @@ type EditWineFormProps = {
     initialDescription?: string | null
     initialImageUrl?: string | null
     initialBroughtBy?: string | null
+    users: { id: string; username: string }[]
 }
 
-export default function EditWineForm({ eventId, wineOrder, initialName, initialDescription, initialImageUrl }: EditWineFormProps) {
+export default function EditWineForm({ eventId, wineOrder, initialName, initialDescription, initialImageUrl, initialBroughtBy, users }: EditWineFormProps) {
     const [state, action] = useActionState(updateWineDetails, undefined)
     const [imageUrl, setImageUrl] = useState(initialImageUrl || '')
     const [isFetching, setIsFetching] = useState(false)
