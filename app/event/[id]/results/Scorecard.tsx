@@ -1,6 +1,6 @@
 'use client'
 
-import { useLanguage } from '@/contexts/LanguageContext'
+
 
 type ScorecardProps = {
     wines: {
@@ -23,7 +23,7 @@ type ScorecardProps = {
 }
 
 export default function Scorecard({ wines, users, grades, isFinished, revealedWineOrders }: ScorecardProps) {
-    const { t } = useLanguage()
+    // const { t } = useLanguage()
 
     // Sort wines by order
     const sortedWines = [...wines].sort((a, b) => a.order - b.order)

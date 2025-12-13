@@ -13,7 +13,7 @@ export const cookie = {
     duration: 24 * 60 * 60 * 1000,
 }
 
-export async function encrypt(payload: any) {
+export async function encrypt(payload: Record<string, unknown>) {
     return new SignJWT(payload)
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
@@ -27,7 +27,7 @@ export async function decrypt(session: string | undefined = '') {
             algorithms: ['HS256'],
         })
         return payload
-    } catch (error) {
+    } catch {
         return null
     }
 }

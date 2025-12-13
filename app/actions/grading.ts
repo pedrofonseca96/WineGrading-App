@@ -13,7 +13,7 @@ const gradeSchema = z.object({
     tasteScore: z.coerce.number().min(1).max(10),
 })
 
-export async function submitGrade(prevState: any, formData: FormData) {
+export async function submitGrade(prevState: unknown, formData: FormData) {
     const session = await verifySession()
 
     const result = gradeSchema.safeParse(Object.fromEntries(formData))

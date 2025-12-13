@@ -41,9 +41,12 @@ export default function PresentationClient({ results, eventId, isCreator, initia
     const { t } = useLanguage()
 
     // Reset showBroughtBy when moving to next wine
-    useEffect(() => {
+    // Reset showBroughtBy when moving to next wine
+    const [prevRevealCount, setPrevRevealCount] = useState(revealedCount)
+    if (revealedCount !== prevRevealCount) {
+        setPrevRevealCount(revealedCount)
         setShowBroughtBy(false)
-    }, [revealedCount])
+    }
 
     // Polling for presentation state (reveal count)
     useEffect(() => {
@@ -83,7 +86,7 @@ export default function PresentationClient({ results, eventId, isCreator, initia
         const interval = setInterval(fetchDetails, 2000)
 
         return () => clearInterval(interval)
-    }, [eventId, currentReveal?.order]) // Re-run when current wine changes
+    }, [eventId, currentReveal]) // Re-run when current wine changes
 
     // Use local state if available, otherwise fall back to prop data (though prop data might be stale)
     const displayWine = currentWineDetails || currentReveal?.wine
@@ -129,6 +132,7 @@ export default function PresentationClient({ results, eventId, isCreator, initia
 
                             {displayWine?.imageUrl && (
                                 <div className="mb-8 relative w-48 h-72 mx-auto shadow-2xl rounded-lg overflow-hidden border-2 border-stone-800 animate-in fade-in zoom-in duration-1000 delay-500 fill-mode-forwards">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
                                         src={displayWine.imageUrl}
                                         alt={displayWine.name || 'Wine'}

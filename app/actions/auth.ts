@@ -18,7 +18,7 @@ const registerSchema = z.object({
     password: z.string().min(6, 'Password must be at least 6 characters'),
 })
 
-export async function login(prevState: any, formData: FormData) {
+export async function login(prevState: unknown, formData: FormData) {
     const ip = (await headers()).get('x-forwarded-for') || 'unknown'
     const limit = await checkRateLimit(`login:${ip}`, 5, 60)
 
@@ -56,7 +56,7 @@ export async function login(prevState: any, formData: FormData) {
     redirect('/dashboard')
 }
 
-export async function register(prevState: any, formData: FormData) {
+export async function register(prevState: unknown, formData: FormData) {
     const ip = (await headers()).get('x-forwarded-for') || 'unknown'
     const limit = await checkRateLimit(`register:${ip}`, 5, 60)
 

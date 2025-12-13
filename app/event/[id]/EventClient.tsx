@@ -75,7 +75,7 @@ export default function EventClient({
     }
 
     const isAdmin = userId === event.creatorId
-    console.log('EventClient Debug:', { userId, creatorId: event.creatorId, isAdmin, eventStatus: event.status })
+
 
     if (event.status === 'finished') {
         return (

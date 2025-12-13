@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 
 type EventState = {
     status: string
@@ -10,7 +9,7 @@ type EventState = {
 
 export function useEventStream(eventId: string) {
     const [eventState, setEventState] = useState<EventState | null>(null)
-    const router = useRouter()
+
 
     useEffect(() => {
         let eventSource: EventSource | null = null

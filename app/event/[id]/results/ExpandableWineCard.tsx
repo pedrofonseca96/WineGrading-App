@@ -61,6 +61,7 @@ export default function ExpandableWineCard({ result, index, eventId, isAdmin, ch
                         {/* Wine Image - Only show to non-admin users */}
                         {!isAdmin && result.wine?.imageUrl && (
                             <div className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 overflow-hidden rounded-lg border-2 border-stone-600">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                     src={result.wine.imageUrl}
                                     alt={result.wine.name || `Wine #${result.order}`}

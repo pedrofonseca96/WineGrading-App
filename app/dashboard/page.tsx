@@ -10,7 +10,7 @@ async function getEvents() {
 }
 
 export default async function DashboardPage() {
-    const session = await verifySession()
+    await verifySession()
     const events = await getEvents()
 
     return <DashboardClient events={events} />

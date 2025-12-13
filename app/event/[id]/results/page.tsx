@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/db'
 import { verifySession } from '@/lib/session'
-import { updateWineDetails } from '@/app/actions/results'
 import Link from 'next/link'
 import EditWineForm from './EditWineForm'
 import StartPresentationButton from './StartPresentationButton'

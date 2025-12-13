@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Event Flow', () => {
-    let username = `user_${Date.now()}`;
+    const username = `testuser_${Date.now()} `;
 
     test.beforeEach(async ({ page }) => {
         // Login before each test

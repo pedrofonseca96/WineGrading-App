@@ -10,7 +10,7 @@ interface EventSyncProps {
     currentPresentationMode: boolean
 }
 
-export default function EventSync({ eventId, currentStatus, currentPresentationMode }: EventSyncProps) {
+export default function EventSync({ eventId, currentStatus }: EventSyncProps) {
     const router = useRouter()
     const pathname = usePathname()
     const eventState = useEventStream(eventId)
@@ -24,8 +24,8 @@ export default function EventSync({ eventId, currentStatus, currentPresentationM
             return
         }
 
-        // Redirect to results if event is finished
-        if (eventState.status === 'finished' && currentStatus !== 'finished') {
+        // Reload if status changes (e.g. active -> finished)
+        if (eventState.status && eventState.status !== currentStatus) {
             router.refresh()
             return
         }
@@ -36,7 +36,7 @@ export default function EventSync({ eventId, currentStatus, currentPresentationM
             return
         }
 
-    }, [eventState, eventId, pathname, router, currentStatus])
+    }, [eventState, router, pathname, eventId, currentStatus])
 
     return null
 }

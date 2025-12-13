@@ -37,6 +37,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         const stored = localStorage.getItem('language') as Language | null
         const detected = detectBrowserLanguage()
         const initial = stored || detected
+        // eslint-disable-next-line
         setLanguageState(initial)
     }, [])
 

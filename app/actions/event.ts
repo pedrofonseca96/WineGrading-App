@@ -9,7 +9,7 @@ const createEventSchema = z.object({
     name: z.string().min(1, 'Event name is required'),
 })
 
-export async function createEvent(prevState: any, formData: FormData) {
+export async function createEvent(prevState: unknown, formData: FormData) {
     const session = await verifySession()
 
     const result = createEventSchema.safeParse(Object.fromEntries(formData))

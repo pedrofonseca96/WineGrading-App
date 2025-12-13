@@ -2,7 +2,7 @@
 
 import { useFormStatus } from 'react-dom'
 import { useState, useRef, useActionState } from 'react'
-import { fetchWineImage, uploadImage } from '@/app/actions/images'
+import { fetchWineImage } from '@/app/actions/images'
 import { updateWineDetails } from '@/app/actions/results'
 import { useLanguage } from '@/contexts/LanguageContext'
 
@@ -15,11 +15,11 @@ type EditWineFormProps = {
     initialBroughtBy?: string | null
 }
 
-export default function EditWineForm({ eventId, wineOrder, initialName, initialDescription, initialImageUrl, initialBroughtBy }: EditWineFormProps) {
+export default function EditWineForm({ eventId, wineOrder, initialName, initialDescription, initialImageUrl }: EditWineFormProps) {
     const [state, action] = useActionState(updateWineDetails, undefined)
     const [imageUrl, setImageUrl] = useState(initialImageUrl || '')
     const [isFetching, setIsFetching] = useState(false)
-    const [isUploading, setIsUploading] = useState(false)
+
     const { t } = useLanguage()
 
     const nameInputRef = useRef<HTMLInputElement>(null)
@@ -42,22 +42,7 @@ export default function EditWineForm({ eventId, wineOrder, initialName, initialD
         // If there's a file input, we might want to clear it too, but it's hidden and controlled by onChange
     }
 
-    const handleUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file) return
 
-        setIsUploading(true)
-        try {
-            const formData = new FormData()
-            formData.append('file', file)
-            const url = await uploadImage(formData)
-            setImageUrl(url)
-        } catch (error) {
-            console.error('Upload failed', error)
-        } finally {
-            setIsUploading(false)
-        }
-    }
 
     return (
         <form action={action} className="flex flex-col gap-4 p-4 bg-stone-900/50 rounded-xl border border-stone-800">
@@ -70,6 +55,7 @@ export default function EditWineForm({ eventId, wineOrder, initialName, initialD
                     <div className="aspect-[2/3] bg-stone-800 rounded-lg overflow-hidden relative border border-stone-700 group">
                         {imageUrl ? (
                             <>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={imageUrl} alt="Wine" className="w-full h-full object-cover" />
                                 <button
                                     type="button"

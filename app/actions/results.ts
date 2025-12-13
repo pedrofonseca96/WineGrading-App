@@ -14,7 +14,7 @@ const UpdateWineSchema = z.object({
     broughtBy: z.string().nullable().optional(),
 })
 
-export async function updateWineDetails(prevState: any, formData: FormData) {
+export async function updateWineDetails(prevState: unknown, formData: FormData) {
     const session = await verifySession()
 
     const validatedFields = UpdateWineSchema.safeParse({
