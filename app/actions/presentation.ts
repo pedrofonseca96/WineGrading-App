@@ -4,17 +4,21 @@ import { prisma } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 import { verifySession } from '@/lib/session'
 
-async function verifyEventOwner(eventId: string) {
+async function verifyEventAdmin(eventId: string) {
     const session = await verifySession()
-    const event = await prisma.event.findUnique({ where: { id: eventId } })
-    if (!event || event.creatorId !== session.userId) {
+    const [event, currentUser] = await Promise.all([
+        prisma.event.findUnique({ where: { id: eventId } }),
+        prisma.user.findUnique({ where: { id: session.userId }, select: { role: true } })
+    ])
+
+    if (!event || (event.creatorId !== session.userId && currentUser?.role !== 'SUPER_USER')) {
         throw new Error('Unauthorized')
     }
     return event
 }
 
 export async function startPresentation(eventId: string) {
-    await verifyEventOwner(eventId)
+    await verifyEventAdmin(eventId)
     await prisma.event.update({
         where: { id: eventId },
         data: { presentationMode: true, presentationRevealCount: 0 }
@@ -23,7 +27,7 @@ export async function startPresentation(eventId: string) {
 }
 
 export async function updateRevealCount(eventId: string, count: number) {
-    await verifyEventOwner(eventId)
+    await verifyEventAdmin(eventId)
     await prisma.event.update({
         where: { id: eventId },
         data: { presentationRevealCount: count }
@@ -32,7 +36,7 @@ export async function updateRevealCount(eventId: string, count: number) {
 }
 
 export async function finishPresentation(eventId: string) {
-    await verifyEventOwner(eventId)
+    await verifyEventAdmin(eventId)
     await prisma.event.update({
         where: { id: eventId },
         data: { presentationMode: false, status: 'finished' }
@@ -41,7 +45,7 @@ export async function finishPresentation(eventId: string) {
 }
 
 export async function updateBroughtBy(eventId: string, wineOrder: number, broughtBy: string) {
-    await verifyEventOwner(eventId)
+    await verifyEventAdmin(eventId)
     await prisma.wine.updateMany({
         where: {
             eventId: eventId,

@@ -11,10 +11,16 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(uuid())
-  username String  @unique
+  id       String   @id @default(uuid())
+  username String   @unique
   password String
+  role     UserRole @default(USER)
   grades   Grade[]
+}
+
+enum UserRole {
+  USER
+  SUPER_USER
 }
 
 model Event {

@@ -11,6 +11,7 @@ const gradeSchema = z.object({
     colorScore: z.coerce.number().min(1).max(3),
     smellScore: z.coerce.number().min(1).max(7),
     tasteScore: z.coerce.number().min(1).max(10),
+    targetUserId: z.string().optional(),
 })
 
 export async function submitGrade(prevState: unknown, formData: FormData) {
@@ -24,12 +25,27 @@ export async function submitGrade(prevState: unknown, formData: FormData) {
         }
     }
 
-    const { eventId, wineOrder, colorScore, smellScore, tasteScore } = result.data
+    const { eventId, wineOrder, colorScore, smellScore, tasteScore, targetUserId } = result.data
+
+    let userIdForGrade = session.userId
+
+    // If targetUserId is provided, check if current user is SUPER_USER
+    if (targetUserId && targetUserId !== session.userId) {
+        const currentUser = await prisma.user.findUnique({
+            where: { id: session.userId },
+            select: { role: true }
+        })
+
+        if (currentUser?.role !== 'SUPER_USER') {
+            throw new Error('Unauthorized: Only Super Users can submit grades for others')
+        }
+        userIdForGrade = targetUserId
+    }
 
     await prisma.grade.upsert({
         where: {
             userId_eventId_wineOrder: {
-                userId: session.userId,
+                userId: userIdForGrade,
                 eventId,
                 wineOrder,
             },
@@ -40,7 +56,7 @@ export async function submitGrade(prevState: unknown, formData: FormData) {
             tasteScore,
         },
         create: {
-            userId: session.userId,
+            userId: userIdForGrade,
             eventId,
             wineOrder,
             colorScore,
@@ -55,9 +71,13 @@ export async function submitGrade(prevState: unknown, formData: FormData) {
 
 export async function nextWine(eventId: string) {
     const session = await verifySession()
-    const event = await prisma.event.findUnique({ where: { id: eventId } })
 
-    if (!event || event.creatorId !== session.userId) {
+    const [event, currentUser] = await Promise.all([
+        prisma.event.findUnique({ where: { id: eventId } }),
+        prisma.user.findUnique({ where: { id: session.userId }, select: { role: true } })
+    ])
+
+    if (!event || (event.creatorId !== session.userId && currentUser?.role !== 'SUPER_USER')) {
         throw new Error('Unauthorized')
     }
 
@@ -71,9 +91,13 @@ export async function nextWine(eventId: string) {
 
 export async function previousWine(eventId: string) {
     const session = await verifySession()
-    const event = await prisma.event.findUnique({ where: { id: eventId } })
 
-    if (!event || event.creatorId !== session.userId) {
+    const [event, currentUser] = await Promise.all([
+        prisma.event.findUnique({ where: { id: eventId } }),
+        prisma.user.findUnique({ where: { id: session.userId }, select: { role: true } })
+    ])
+
+    if (!event || (event.creatorId !== session.userId && currentUser?.role !== 'SUPER_USER')) {
         throw new Error('Unauthorized')
     }
 
@@ -89,9 +113,13 @@ export async function previousWine(eventId: string) {
 
 export async function finishEvent(eventId: string) {
     const session = await verifySession()
-    const event = await prisma.event.findUnique({ where: { id: eventId } })
 
-    if (!event || event.creatorId !== session.userId) {
+    const [event, currentUser] = await Promise.all([
+        prisma.event.findUnique({ where: { id: eventId } }),
+        prisma.user.findUnique({ where: { id: session.userId }, select: { role: true } })
+    ])
+
+    if (!event || (event.creatorId !== session.userId && currentUser?.role !== 'SUPER_USER')) {
         throw new Error('Unauthorized')
     }
 

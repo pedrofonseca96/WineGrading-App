@@ -34,9 +34,13 @@ export async function updateWineDetails(prevState: unknown, formData: FormData) 
 
     const { eventId, wineOrder, name, description, imageUrl, broughtBy } = validatedFields.data
 
-    // Verify ownership
-    const event = await prisma.event.findUnique({ where: { id: eventId } })
-    if (!event || event.creatorId !== session.userId) {
+    // Verify ownership or super user status
+    const [event, currentUser] = await Promise.all([
+        prisma.event.findUnique({ where: { id: eventId } }),
+        prisma.user.findUnique({ where: { id: session.userId }, select: { role: true } })
+    ])
+
+    if (!event || (event.creatorId !== session.userId && currentUser?.role !== 'SUPER_USER')) {
         return { message: 'Unauthorized' }
     }
 
