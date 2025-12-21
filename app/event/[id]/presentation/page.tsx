@@ -60,7 +60,12 @@ export default async function PresentationPage({ params }: { params: Promise<{ i
         notFound()
     }
 
-    const isCreator = event.creatorId === session.userId
+    const user = await prisma.user.findUnique({
+        where: { id: session.userId },
+        select: { role: true }
+    })
+
+    const isCreator = event.creatorId === session.userId || user?.role === 'SUPER_USER'
 
     if (!event.presentationMode) {
         redirect(`/event/${id}`)

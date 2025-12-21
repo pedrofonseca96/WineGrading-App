@@ -47,12 +47,23 @@ export default function EventClient({
     const { t } = useLanguage()
     const eventState = useEventStream(event.id)
 
+    const isAdmin = userId === event.creatorId
+    const isSuperUser = userRole === 'SUPER_USER'
+
     // Update local state when server state changes
     useEffect(() => {
-        if (eventState && eventState.currentWineOrder !== event.currentWineOrder) {
+        if (!eventState) return
+
+        // If wine order changed, refresh to get new data
+        if (eventState.currentWineOrder !== event.currentWineOrder) {
             router.refresh()
         }
-    }, [eventState, event.currentWineOrder, router])
+
+        // If event just finished and user is NOT a Super User, redirect to results
+        if (eventState.status === 'finished' && event.status !== 'finished' && !isSuperUser) {
+            router.push(`/event/${event.id}/results`)
+        }
+    }, [eventState, event.currentWineOrder, event.status, event.id, router, isSuperUser])
 
     // Reset local state when wine changes
     useEffect(() => {
@@ -104,9 +115,6 @@ export default function EventClient({
         }
         return formData
     }
-
-    const isAdmin = userId === event.creatorId
-    const isSuperUser = userRole === 'SUPER_USER'
 
 
     if (event.status === 'finished' && !isSuperUser) {
@@ -246,7 +254,10 @@ export default function EventClient({
                             {t.event.nextWine}
                         </button>
                         <button
-                            onClick={() => startTransition(() => finishEvent(event.id))}
+                            onClick={() => startTransition(async () => {
+                                await finishEvent(event.id)
+                                router.push(`/event/${event.id}/results`)
+                            })}
                             className="px-4 py-2 bg-red-900/30 text-red-400 rounded-lg hover:bg-red-900/50 border border-red-900/50"
                         >
                             {t.event.finishEvent}

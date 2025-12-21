@@ -72,7 +72,14 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
     const event = await prisma.event.findUnique({ where: { id } })
     const results = await getResults(id)
 
+    const user = await prisma.user.findUnique({
+        where: { id: session.userId },
+        select: { role: true }
+    })
+
     const isAdmin = event?.creatorId === session.userId
+    const isSuperUser = user?.role === 'SUPER_USER'
+    const canEdit = isAdmin || isSuperUser
 
     const users = await prisma.user.findMany({
         where: {
@@ -98,7 +105,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
                         >
                             Back to Dashboard
                         </Link>
-                        {isAdmin && (
+                        {canEdit && (
                             <StartPresentationButton eventId={id} />
                         )}
                     </div>
@@ -111,10 +118,10 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
                             result={result}
                             index={index}
                             eventId={id}
-                            isAdmin={isAdmin}
+                            isAdmin={canEdit}
                         >
                             {/* Admin Edit Form */}
-                            {isAdmin && (
+                            {canEdit && (
                                 <div className="bg-stone-900/50 px-6 py-4 border-t border-stone-700">
                                     <EditWineForm
                                         eventId={id}

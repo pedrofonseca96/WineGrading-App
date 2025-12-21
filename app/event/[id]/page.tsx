@@ -33,6 +33,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
         notFound()
     }
 
+    // Redirect to presentation if it's active (applies to everyone)
     if (event.presentationMode) {
         redirect(`/event/${id}/presentation`)
     }
