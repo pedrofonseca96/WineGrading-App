@@ -7,17 +7,27 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
     const { id } = await params
     const session = await verifySession()
 
-    const event = await prisma.event.findUnique({
-        where: { id },
-        select: {
-            id: true,
-            name: true,
-            status: true,
-            currentWineOrder: true,
-            creatorId: true,
-            presentationMode: true,
-        }
-    })
+    const [event, user] = await Promise.all([
+        prisma.event.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                name: true,
+                status: true,
+                currentWineOrder: true,
+                creatorId: true,
+                presentationMode: true,
+            }
+        }),
+        prisma.user.findUnique({
+            where: { id: session.userId },
+            select: { role: true }
+        })
+    ])
+
+    const allUsers = (user?.role === 'SUPER_USER')
+        ? await prisma.user.findMany({ select: { id: true, username: true } })
+        : []
 
     if (!event) {
         notFound()
@@ -42,7 +52,9 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
             <EventClient
                 event={event}
                 userId={session.userId}
+                userRole={user?.role || 'USER'}
                 initialGrade={userGrade}
+                users={allUsers}
             />
         </div>
     )

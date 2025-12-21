@@ -14,6 +14,30 @@ const gradeSchema = z.object({
     targetUserId: z.string().optional(),
 })
 
+export async function getUserGrade(eventId: string, wineOrder: number, targetUserId: string) {
+    const session = await verifySession()
+
+    // Security check: Only SUPER_USER can fetch others' grades
+    const currentUser = await prisma.user.findUnique({
+        where: { id: session.userId },
+        select: { role: true }
+    })
+
+    if (currentUser?.role !== 'SUPER_USER' && session.userId !== targetUserId) {
+        throw new Error('Unauthorized')
+    }
+
+    return prisma.grade.findUnique({
+        where: {
+            userId_eventId_wineOrder: {
+                userId: targetUserId,
+                eventId,
+                wineOrder,
+            },
+        },
+    })
+}
+
 export async function submitGrade(prevState: unknown, formData: FormData) {
     const session = await verifySession()
 

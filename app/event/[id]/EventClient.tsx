@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useTransition } from 'react'
-import { submitGrade, nextWine, previousWine, finishEvent } from '@/app/actions/grading'
+import { submitGrade, nextWine, previousWine, finishEvent, getUserGrade } from '@/app/actions/grading'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -21,19 +21,29 @@ type GradeData = {
     tasteScore: number
 } | null
 
+type UserInfo = {
+    id: string
+    username: string
+}
+
 export default function EventClient({
     event,
     userId,
+    userRole,
     initialGrade,
+    users = [],
 }: {
     event: EventData
     userId: string
+    userRole: string
     initialGrade: GradeData
+    users?: UserInfo[]
 }) {
     const router = useRouter()
     const [isPending, startTransition] = useTransition()
     const [grade, setGrade] = useState(initialGrade || { colorScore: 0, smellScore: 0, tasteScore: 0 })
     const [submitted, setSubmitted] = useState(!!initialGrade)
+    const [targetUserId, setTargetUserId] = useState(userId)
     const { t } = useLanguage()
     const eventState = useEventStream(event.id)
 
@@ -48,8 +58,26 @@ export default function EventClient({
     useEffect(() => {
         setGrade(initialGrade || { colorScore: 0, smellScore: 0, tasteScore: 0 })
         setSubmitted(!!initialGrade)
+        setTargetUserId(userId) // Reset to yourself when wine changes
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [event.currentWineOrder])
+
+    // Load grade when target user changes (for Super User corrections)
+    useEffect(() => {
+        if (targetUserId === userId) {
+            setGrade(initialGrade || { colorScore: 0, smellScore: 0, tasteScore: 0 })
+            setSubmitted(!!initialGrade)
+            return
+        }
+
+        const loadUserGrade = async () => {
+            const userGrade = await getUserGrade(event.id, event.currentWineOrder, targetUserId)
+            setGrade(userGrade || { colorScore: 0, smellScore: 0, tasteScore: 0 })
+            setSubmitted(!!userGrade)
+        }
+
+        loadUserGrade()
+    }, [targetUserId, event.id, event.currentWineOrder, userId, initialGrade])
 
     const handleGradeChange = (field: keyof typeof grade, value: number) => {
         setGrade((prev) => ({ ...prev!, [field]: value }))
@@ -71,13 +99,17 @@ export default function EventClient({
         formData.append('colorScore', data!.colorScore.toString())
         formData.append('smellScore', data!.smellScore.toString())
         formData.append('tasteScore', data!.tasteScore.toString())
+        if (targetUserId !== userId) {
+            formData.append('targetUserId', targetUserId)
+        }
         return formData
     }
 
     const isAdmin = userId === event.creatorId
+    const isSuperUser = userRole === 'SUPER_USER'
 
 
-    if (event.status === 'finished') {
+    if (event.status === 'finished' && !isSuperUser) {
         return (
             <div className="text-center py-12">
                 <h2 className="text-3xl font-serif text-amber-500 mb-4">{t.event.eventFinished}</h2>
@@ -98,11 +130,32 @@ export default function EventClient({
                 <span className="inline-block px-3 py-1 rounded-full bg-stone-800 text-amber-500 text-sm font-medium mb-4 border border-stone-700">
                     {t.event.wineNumber}{event.currentWineOrder}
                 </span>
-                <h2 className="text-4xl font-serif font-bold text-stone-100">Tasting in Progress</h2>
+                <h2 className="text-4xl font-serif font-bold text-stone-100">
+                    {event.status === 'finished' ? 'Post-Event Correction' : 'Tasting in Progress'}
+                </h2>
                 <div className="text-xs text-stone-500 mt-2">
-                    Debug: User={userId} | Creator={event.creatorId} | IsAdmin={isAdmin ? 'Yes' : 'No'}
+                    Debug: User={userId} | Creator={event.creatorId} | Role={userRole}
                 </div>
             </div>
+
+            {isSuperUser && users.length > 0 && (
+                <div className="bg-stone-800 p-4 rounded-xl border border-amber-500/30">
+                    <label className="block text-xs font-medium text-amber-500 uppercase tracking-wider mb-2">
+                        Correcting grade for:
+                    </label>
+                    <select
+                        value={targetUserId}
+                        onChange={(e) => setTargetUserId(e.target.value)}
+                        className="w-full bg-stone-900 text-stone-100 border border-stone-700 rounded-lg px-3 py-2 outline-none focus:border-amber-500"
+                    >
+                        {users.map((u) => (
+                            <option key={u.id} value={u.id}>
+                                {u.username} {u.id === userId ? '(Me)' : ''}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            )}
 
             <div className="bg-stone-800 p-8 rounded-2xl shadow-xl border border-stone-700">
                 <div className="space-y-8">
@@ -175,7 +228,7 @@ export default function EventClient({
                 </div>
             </div>
 
-            {isAdmin && (
+            {(isAdmin || isSuperUser) && (
                 <div className="border-t border-stone-800 pt-8 mt-12">
                     <h3 className="text-stone-500 text-sm font-medium uppercase tracking-wider mb-4 text-center">{t.admin.adminControls}</h3>
                     <div className="flex justify-center gap-4">
