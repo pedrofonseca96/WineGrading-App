@@ -103,11 +103,11 @@ export default function PresentationClient({ results, eventId, isCreator, initia
     }
 
     return (
-        <div className="min-h-screen text-stone-100 flex flex-col items-center justify-center p-8 relative overflow-hidden">
+        <div className="min-h-screen text-stone-100 flex flex-col items-center justify-center p-4 sm:p-8 relative overflow-hidden">
             {/* Background decoration */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-900/20 via-stone-950 to-stone-950 pointer-events-none" />
 
-            <div className="z-10 w-full max-w-5xl space-y-12 text-center">
+            <div className="z-10 w-full max-w-5xl space-y-6 sm:space-y-12 text-center">
                 {!isFinished && !currentReveal && (
                     <div className="animate-in fade-in zoom-in duration-1000 flex flex-col items-center justify-center h-[60vh]">
                         <h1 className="text-6xl md:text-8xl font-serif font-bold text-amber-500 mb-8 animate-pulse">
@@ -121,17 +121,17 @@ export default function PresentationClient({ results, eventId, isCreator, initia
 
                 {!isFinished && currentReveal && (
                     <div key={currentReveal.order} className="animate-in fade-in zoom-in duration-1000 slide-in-from-bottom-10 fill-mode-forwards">
-                        <div className="mb-4 text-amber-500 font-serif text-2xl tracking-widest uppercase animate-in fade-in slide-in-from-top-4 duration-700 delay-100 fill-mode-forwards">
+                        <div className="mb-2 sm:mb-4 text-amber-500 font-serif text-lg sm:text-2xl tracking-widest uppercase animate-in fade-in slide-in-from-top-4 duration-700 delay-100 fill-mode-forwards">
                             {t.presentation.rank}{getRank(revealedCount)}
                         </div>
 
-                        <div className="bg-stone-900/80 backdrop-blur-md p-12 rounded-3xl border border-amber-500/30 shadow-2xl shadow-amber-900/20 animate-in fade-in zoom-in-95 duration-700 delay-200 fill-mode-forwards">
-                            <h1 className="text-6xl md:text-8xl font-bold text-white mb-6 font-serif animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300 fill-mode-forwards">
+                        <div className="bg-stone-900/80 backdrop-blur-md p-4 sm:p-8 md:p-12 rounded-2xl sm:rounded-3xl border border-amber-500/30 shadow-2xl shadow-amber-900/20 animate-in fade-in zoom-in-95 duration-700 delay-200 fill-mode-forwards">
+                            <h1 className="text-3xl sm:text-5xl md:text-8xl font-bold text-white mb-3 sm:mb-6 font-serif animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300 fill-mode-forwards">
                                 {displayWine?.name || `${t.event.wineNumber}${currentReveal.order}`}
                             </h1>
 
                             {displayWine?.imageUrl && (
-                                <div className="mb-8 relative w-48 h-72 mx-auto shadow-2xl rounded-lg overflow-hidden border-2 border-stone-800 animate-in fade-in zoom-in duration-1000 delay-500 fill-mode-forwards">
+                                <div className="mb-4 sm:mb-8 relative w-24 h-36 sm:w-40 sm:h-60 md:w-48 md:h-72 mx-auto shadow-2xl rounded-lg overflow-hidden border-2 border-stone-800 animate-in fade-in zoom-in duration-1000 delay-500 fill-mode-forwards">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
                                         src={displayWine.imageUrl}
@@ -141,24 +141,24 @@ export default function PresentationClient({ results, eventId, isCreator, initia
                                 </div>
                             )}
 
-                            <p className="text-2xl text-stone-400 mb-8 italic animate-in fade-in slide-in-from-bottom-2 duration-700 delay-700 fill-mode-forwards">
+                            <p className="text-base sm:text-xl md:text-2xl text-stone-400 mb-4 sm:mb-8 italic animate-in fade-in slide-in-from-bottom-2 duration-700 delay-700 fill-mode-forwards line-clamp-2 sm:line-clamp-none">
                                 {displayWine?.description || t.presentation.mysteryWine}
                             </p>
 
                             {/* Brought By Section */}
-                            <div className="mb-12 animate-in fade-in slide-in-from-bottom-2 duration-700 delay-900 fill-mode-forwards min-h-[5rem] flex flex-col items-center justify-center gap-3">
-                                <span className="text-stone-500 uppercase text-sm tracking-widest">{t.presentation.broughtBy}</span>
+                            <div className="mb-6 sm:mb-12 animate-in fade-in slide-in-from-bottom-2 duration-700 delay-900 fill-mode-forwards min-h-[3rem] sm:min-h-[5rem] flex flex-col items-center justify-center gap-2 sm:gap-3">
+                                <span className="text-stone-500 uppercase text-xs sm:text-sm tracking-widest">{t.presentation.broughtBy}</span>
 
                                 {displayWine?.broughtBy ? (
                                     // If name exists, show Reveal/Name logic
                                     showBroughtBy ? (
-                                        <span className="text-amber-400 font-bold text-3xl animate-in fade-in zoom-in duration-300 font-serif">
+                                        <span className="text-amber-400 font-bold text-xl sm:text-3xl animate-in fade-in zoom-in duration-300 font-serif">
                                             {displayWine.broughtBy}
                                         </span>
                                     ) : (
                                         <button
                                             onClick={() => setShowBroughtBy(true)}
-                                            className="px-6 py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 text-sm font-medium rounded-full transition-all border border-stone-700 hover:border-amber-500/50 hover:text-amber-500"
+                                            className="px-4 sm:px-6 py-1.5 sm:py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs sm:text-sm font-medium rounded-full transition-all border border-stone-700 hover:border-amber-500/50 hover:text-amber-500"
                                         >
                                             {t.presentation.reveal}
                                         </button>
@@ -169,12 +169,12 @@ export default function PresentationClient({ results, eventId, isCreator, initia
                                         action={async (formData) => {
                                             await updateBroughtBy(eventId, currentReveal.order, formData.get('broughtBy') as string)
                                         }}
-                                        className="flex items-center gap-6 bg-stone-900/50 p-3 rounded-xl border border-stone-800"
+                                        className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 bg-stone-900/50 p-2 sm:p-3 rounded-xl border border-stone-800"
                                     >
                                         <select
                                             name="broughtBy"
                                             defaultValue=""
-                                            className="bg-stone-900 border border-stone-700 text-stone-200 focus:ring-amber-500 focus:border-amber-500 text-lg px-4 py-2 rounded-lg w-64 text-center font-serif appearance-none cursor-pointer"
+                                            className="bg-stone-900 border border-stone-700 text-stone-200 focus:ring-amber-500 focus:border-amber-500 text-sm sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg w-48 sm:w-64 text-center font-serif appearance-none cursor-pointer"
                                             autoFocus
                                         >
                                             <option value="" disabled>Who brought this?</option>
@@ -184,36 +184,36 @@ export default function PresentationClient({ results, eventId, isCreator, initia
                                         </select>
                                         <button
                                             type="submit"
-                                            className="bg-amber-600 hover:bg-amber-500 text-stone-900 text-sm font-bold px-6 py-2 rounded-lg transition-colors shadow-lg shadow-amber-900/20"
+                                            className="bg-amber-600 hover:bg-amber-500 text-stone-900 text-xs sm:text-sm font-bold px-4 sm:px-6 py-1.5 sm:py-2 rounded-lg transition-colors shadow-lg shadow-amber-900/20"
                                         >
                                             Save
                                         </button>
                                     </form>
                                 ) : (
                                     // If name missing and not admin
-                                    <span className="text-stone-600 italic text-lg">???</span>
+                                    <span className="text-stone-600 italic text-base sm:text-lg">???</span>
                                 )}
                             </div>
 
-                            <div className="flex justify-center items-end gap-4 animate-in fade-in zoom-in duration-700 delay-1000 fill-mode-forwards">
-                                <div className="text-9xl font-bold text-amber-500 leading-none">
+                            <div className="flex justify-center items-end gap-2 sm:gap-4 animate-in fade-in zoom-in duration-700 delay-1000 fill-mode-forwards">
+                                <div className="text-5xl sm:text-7xl md:text-9xl font-bold text-amber-500 leading-none">
                                     {currentReveal.totalScore}
                                 </div>
-                                <div className="text-xl text-stone-500 font-medium mb-4">{t.presentation.points}</div>
+                                <div className="text-sm sm:text-lg md:text-xl text-stone-500 font-medium mb-1 sm:mb-4">{t.presentation.points}</div>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-8 mt-12 max-w-2xl mx-auto border-t border-stone-800 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-1200 fill-mode-forwards">
+                            <div className="grid grid-cols-3 gap-4 sm:gap-8 mt-6 sm:mt-12 max-w-2xl mx-auto border-t border-stone-800 pt-4 sm:pt-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-1200 fill-mode-forwards">
                                 <div>
-                                    <div className="text-3xl font-bold text-stone-300">{currentReveal.colorScore}</div>
-                                    <div className="text-stone-500 uppercase text-sm tracking-wider mt-1">{t.event.color}</div>
+                                    <div className="text-xl sm:text-3xl font-bold text-stone-300">{currentReveal.colorScore}</div>
+                                    <div className="text-stone-500 uppercase text-xs sm:text-sm tracking-wider mt-0.5 sm:mt-1">{t.event.color}</div>
                                 </div>
                                 <div>
-                                    <div className="text-3xl font-bold text-stone-300">{currentReveal.smellScore}</div>
-                                    <div className="text-stone-500 uppercase text-sm tracking-wider mt-1">{t.event.smell}</div>
+                                    <div className="text-xl sm:text-3xl font-bold text-stone-300">{currentReveal.smellScore}</div>
+                                    <div className="text-stone-500 uppercase text-xs sm:text-sm tracking-wider mt-0.5 sm:mt-1">{t.event.smell}</div>
                                 </div>
                                 <div>
-                                    <div className="text-3xl font-bold text-stone-300">{currentReveal.tasteScore}</div>
-                                    <div className="text-stone-500 uppercase text-sm tracking-wider mt-1">{t.event.taste}</div>
+                                    <div className="text-xl sm:text-3xl font-bold text-stone-300">{currentReveal.tasteScore}</div>
+                                    <div className="text-stone-500 uppercase text-xs sm:text-sm tracking-wider mt-0.5 sm:mt-1">{t.event.taste}</div>
                                 </div>
                             </div>
                         </div>

@@ -91,17 +91,17 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
     })
 
     return (
-        <div className="min-h-screen text-stone-100 p-8">
+        <div className="min-h-screen text-stone-100 p-4 sm:p-8">
             <div className="max-w-4xl mx-auto">
-                <header className="flex justify-between items-center mb-12">
+                <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 sm:mb-12">
                     <div>
-                        <h1 className="text-4xl font-serif font-bold text-amber-500">Results</h1>
-                        <p className="text-stone-400 mt-2">{event?.name}</p>
+                        <h1 className="text-2xl sm:text-4xl font-serif font-bold text-amber-500">Results</h1>
+                        <p className="text-stone-400 mt-1 sm:mt-2 text-sm sm:text-base">{event?.name}</p>
                     </div>
-                    <div className="flex gap-4">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
                         <Link
                             href="/dashboard"
-                            className="px-4 py-2 border border-stone-600 rounded-md text-stone-300 hover:bg-stone-800 transition-colors"
+                            className="text-center px-4 py-2 border border-stone-600 rounded-lg sm:rounded-md text-stone-300 hover:bg-stone-800 transition-colors"
                         >
                             Back to Dashboard
                         </Link>

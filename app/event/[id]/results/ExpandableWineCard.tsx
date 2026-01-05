@@ -56,11 +56,12 @@ export default function ExpandableWineCard({ result, index, eventId, isAdmin, ch
                 onClick={handleToggle}
                 className="cursor-pointer hover:bg-stone-750 transition-colors"
             >
-                <div className="p-6 flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
-                    <div className="flex items-center gap-6">
+                <div className="p-4 sm:p-6">
+                    {/* Mobile: Row with Rank, Wine Name, Score all inline */}
+                    <div className="flex items-center gap-3 sm:gap-6">
                         {/* Wine Image - Only show to non-admin users */}
                         {!isAdmin && result.wine?.imageUrl && (
-                            <div className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 overflow-hidden rounded-lg border-2 border-stone-600">
+                            <div className="flex-shrink-0 w-16 h-16 sm:w-24 sm:h-24 overflow-hidden rounded-lg border-2 border-stone-600">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                     src={result.wine.imageUrl}
@@ -71,36 +72,36 @@ export default function ExpandableWineCard({ result, index, eventId, isAdmin, ch
                         )}
 
                         {/* Rank Badge */}
-                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-stone-700 text-amber-500 font-bold text-xl border border-stone-600">
+                        <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-stone-700 text-amber-500 font-bold text-lg sm:text-xl border border-stone-600">
                             #{index + 1}
                         </div>
 
-                        {/* Wine Details */}
-                        <div>
-                            <h3 className="text-2xl font-serif font-bold text-stone-100">
+                        {/* Wine Details - grows to fill space */}
+                        <div className="flex-1 min-w-0">
+                            <h3 className="text-lg sm:text-2xl font-serif font-bold text-stone-100 truncate">
                                 {result.wine?.name || `Wine #${result.order}`}
                             </h3>
-                            <p className="text-stone-400 text-sm">
+                            <p className="text-stone-400 text-xs sm:text-sm truncate hidden sm:block">
                                 {result.wine?.description || 'No description added'}
                             </p>
                         </div>
-                    </div>
 
-                    {/* Score & Expand Icon */}
-                    <div className="flex items-center gap-4">
-                        <div className="text-right">
-                            <div className="text-4xl font-bold text-amber-500">{result.totalScore}</div>
-                            <div className="text-stone-500 text-xs uppercase tracking-wider">Total Score</div>
-                        </div>
-                        <div className="text-stone-400">
-                            <svg
-                                className={`w-6 h-6 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
+                        {/* Score & Expand Icon - always on the right */}
+                        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+                            <div className="text-right">
+                                <div className="text-2xl sm:text-4xl font-bold text-amber-500">{result.totalScore}</div>
+                                <div className="text-stone-500 text-xs uppercase tracking-wider hidden sm:block">Total Score</div>
+                            </div>
+                            <div className="text-stone-400">
+                                <svg
+                                    className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
                         </div>
                     </div>
                 </div>

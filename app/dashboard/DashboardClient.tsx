@@ -17,22 +17,22 @@ export default function DashboardClient({ events }: DashboardClientProps) {
     const { t } = useLanguage()
 
     return (
-        <div className="min-h-screen text-stone-100 p-8">
+        <div className="min-h-screen text-stone-100 p-4 sm:p-8">
             <div className="max-w-4xl mx-auto">
-                <header className="flex justify-between items-center mb-12">
+                <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 sm:mb-12">
                     <div>
-                        <h1 className="text-4xl font-serif font-bold text-amber-500">Junior Rocketeers</h1>
-                        <p className="text-stone-400 mt-2">{t.dashboard.title}</p>
+                        <h1 className="text-2xl sm:text-4xl font-serif font-bold text-amber-500">Junior Rocketeers</h1>
+                        <p className="text-stone-400 mt-1 sm:mt-2 text-sm sm:text-base">{t.dashboard.title}</p>
                     </div>
-                    <div className="flex gap-4">
-                        <form action={logout}>
-                            <button className="px-4 py-2 text-sm font-medium text-stone-400 hover:text-white transition-colors">
+                    <div className="flex flex-row gap-2 sm:gap-4 w-full sm:w-auto">
+                        <form action={logout} className="flex-1 sm:flex-none">
+                            <button className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-stone-400 hover:text-white transition-colors bg-stone-800 sm:bg-transparent rounded-lg sm:rounded-none">
                                 {t.auth.logout}
                             </button>
                         </form>
                         <Link
                             href="/event/create"
-                            className="px-4 py-2 bg-amber-600 text-stone-900 font-medium rounded-md hover:bg-amber-500 transition-colors"
+                            className="flex-1 sm:flex-none text-center px-4 py-2 bg-amber-600 text-stone-900 font-medium rounded-lg sm:rounded-md hover:bg-amber-500 transition-colors"
                         >
                             {t.dashboard.createEvent}
                         </Link>

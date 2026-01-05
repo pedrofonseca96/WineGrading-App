@@ -33,6 +33,22 @@ export default function Scorecard({ wines, users, grades, isFinished, revealedWi
     const maxScore = Math.max(...wines.map(w => w.totalScore))
     const winners = wines.filter(w => w.totalScore === maxScore).map(w => w.broughtBy).filter(Boolean)
 
+    // Calculate aggregate scores per person who brought wines
+    const broughtByScores = new Map<string, { totalScore: number; wineCount: number }>()
+    wines.forEach(wine => {
+        if (wine.broughtBy) {
+            const current = broughtByScores.get(wine.broughtBy) || { totalScore: 0, wineCount: 0 }
+            current.totalScore += wine.totalScore
+            current.wineCount += 1
+            broughtByScores.set(wine.broughtBy, current)
+        }
+    })
+
+    // Sort by total score descending
+    const broughtByLeaderboard = Array.from(broughtByScores.entries())
+        .map(([name, data]) => ({ name, ...data }))
+        .sort((a, b) => b.totalScore - a.totalScore)
+
     return (
         <div className="mt-16 bg-stone-900/50 rounded-2xl border border-stone-800 overflow-hidden">
             <div className="p-6 border-b border-stone-800">
@@ -93,6 +109,43 @@ export default function Scorecard({ wines, users, grades, isFinished, revealedWi
                     </tbody>
                 </table>
             </div>
+
+            {/* Aggregate Scores by Person Who Brought Wines */}
+            {isFinished && broughtByLeaderboard.length > 0 && (
+                <div className="p-6 border-t border-stone-800">
+                    <h3 className="text-xl font-serif font-bold text-amber-500 mb-4">🍷 Brought By Leaderboard</h3>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr>
+                                    <th className="p-3 border-b border-stone-800 text-stone-400 font-medium">Rank</th>
+                                    <th className="p-3 border-b border-stone-800 text-stone-400 font-medium">Name</th>
+                                    <th className="p-3 border-b border-stone-800 text-stone-400 font-medium text-center">Wines</th>
+                                    <th className="p-3 border-b border-stone-800 text-stone-400 font-medium text-right">Total Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {broughtByLeaderboard.map((entry, index) => (
+                                    <tr key={entry.name} className="hover:bg-stone-800/30 transition-colors">
+                                        <td className="p-3 border-b border-stone-800/50 text-stone-500">
+                                            {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                                        </td>
+                                        <td className="p-3 border-b border-stone-800/50 font-medium text-stone-300">
+                                            {entry.name}
+                                        </td>
+                                        <td className="p-3 border-b border-stone-800/50 text-center text-stone-400">
+                                            {entry.wineCount}
+                                        </td>
+                                        <td className="p-3 border-b border-stone-800/50 text-right font-bold text-amber-500">
+                                            {entry.totalScore}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
