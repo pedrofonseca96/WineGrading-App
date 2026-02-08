@@ -133,6 +133,13 @@ export const translations = {
         participants: 'Participantes',
         settings: 'Definições',
     },
+    imageFetch: {
+        noApiKey: 'Pesquisa de imagens não configurada',
+        rateLimit: 'Muitos pedidos. Tente novamente mais tarde',
+        noResults: 'Nenhuma imagem encontrada para este vinho',
+        serverError: 'Serviço de pesquisa de imagens indisponível',
+        invalidRequest: 'Pesquisa inválida',
+    },
 }
 
 export type Translations = typeof translations

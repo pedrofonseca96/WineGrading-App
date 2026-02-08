@@ -28,12 +28,16 @@ export async function uploadImage(formData: FormData) {
     return `/uploads/${filename}`
 }
 
-export async function fetchWineImage(query: string) {
+export type ImageFetchResult =
+    | { success: true; url: string }
+    | { success: false; error: 'no_api_key' | 'rate_limit' | 'no_results' | 'server_error' | 'invalid_request' }
+
+export async function fetchWineImage(query: string): Promise<ImageFetchResult> {
     const apiKey = process.env.SERPER_API_KEY
 
     if (!apiKey) {
         console.warn('SERPER_API_KEY is not set. Image fetching disabled.')
-        return null
+        return { success: false, error: 'no_api_key' }
     }
 
     try {
@@ -51,21 +55,32 @@ export async function fetchWineImage(query: string) {
         })
 
         if (!response.ok) {
-            console.error('Serper API error:', await response.text())
-            // Fallback? No, just return null for now.
-            return null
+            console.error('Serper API error:', response.status, await response.text())
+
+            // Map HTTP status codes to error types
+            if (response.status === 401 || response.status === 403) {
+                return { success: false, error: 'no_api_key' }
+            }
+            if (response.status === 429) {
+                return { success: false, error: 'rate_limit' }
+            }
+            if (response.status === 400 || response.status === 404) {
+                return { success: false, error: 'invalid_request' }
+            }
+            // 500, 503, or other
+            return { success: false, error: 'server_error' }
         }
 
         const data = await response.json()
 
         // Serper returns { images: [ { imageUrl: '...', ... } ] }
         if (data.images && data.images.length > 0) {
-            return data.images[0].imageUrl
+            return { success: true, url: data.images[0].imageUrl }
         }
 
-        return null
+        return { success: false, error: 'no_results' }
     } catch (error) {
         console.error('Error fetching wine image:', error)
-        return null
+        return { success: false, error: 'server_error' }
     }
 }

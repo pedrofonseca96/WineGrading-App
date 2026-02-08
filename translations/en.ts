@@ -135,4 +135,11 @@ export const translations: Translations = {
         participants: 'Participants',
         settings: 'Settings',
     },
+    imageFetch: {
+        noApiKey: 'Image search is not configured',
+        rateLimit: 'Too many requests. Please try again later',
+        noResults: 'No image found for this wine',
+        serverError: 'Image search service is unavailable',
+        invalidRequest: 'Invalid search query',
+    },
 }

@@ -20,6 +20,7 @@ export default function EditWineForm({ eventId, wineOrder, initialName, initialD
     const [state, action] = useActionState(updateWineDetails, undefined)
     const [imageUrl, setImageUrl] = useState(initialImageUrl || '')
     const [isFetching, setIsFetching] = useState(false)
+    const [fetchError, setFetchError] = useState<string | null>(null)
 
     const { t } = useLanguage()
 
@@ -30,9 +31,22 @@ export default function EditWineForm({ eventId, wineOrder, initialName, initialD
         if (!query) return
 
         setIsFetching(true)
+        setFetchError(null)
         try {
-            const url = await fetchWineImage(query)
-            if (url) setImageUrl(url)
+            const result = await fetchWineImage(query)
+            if (result.success) {
+                setImageUrl(result.url)
+            } else {
+                // Map error code to translated message
+                const errorMessages: Record<string, string> = {
+                    no_api_key: t.imageFetch.noApiKey,
+                    rate_limit: t.imageFetch.rateLimit,
+                    no_results: t.imageFetch.noResults,
+                    server_error: t.imageFetch.serverError,
+                    invalid_request: t.imageFetch.invalidRequest,
+                }
+                setFetchError(errorMessages[result.error] || t.imageFetch.serverError)
+            }
         } finally {
             setIsFetching(false)
         }
@@ -84,26 +98,31 @@ export default function EditWineForm({ eventId, wineOrder, initialName, initialD
 
                 {/* Text Fields */}
                 <div className="flex-1 space-y-3">
-                    <div className="flex gap-2">
-                        <div className="flex-1">
-                            <input
-                                ref={nameInputRef}
-                                type="text"
-                                name="name"
-                                placeholder={t.form.wineNamePlaceholder}
-                                defaultValue={initialName || ''}
-                                className={`w-full px-3 py-2 bg-stone-800 border ${state?.errors?.name ? 'border-red-500' : 'border-stone-600'} rounded-md text-sm text-stone-100 focus:outline-none focus:border-amber-500`}
-                            />
-                            {state?.errors?.name && <p className="text-xs text-red-500 mt-1">{state.errors.name}</p>}
+                    <div className="flex flex-col gap-1">
+                        <div className="flex gap-2">
+                            <div className="flex-1">
+                                <input
+                                    ref={nameInputRef}
+                                    type="text"
+                                    name="name"
+                                    placeholder={t.form.wineNamePlaceholder}
+                                    defaultValue={initialName || ''}
+                                    className={`w-full px-3 py-2 bg-stone-800 border ${state?.errors?.name ? 'border-red-500' : 'border-stone-600'} rounded-md text-sm text-stone-100 focus:outline-none focus:border-amber-500`}
+                                />
+                                {state?.errors?.name && <p className="text-xs text-red-500 mt-1">{state.errors.name}</p>}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleFetchImage}
+                                disabled={isFetching}
+                                className="px-3 py-2 bg-stone-800 text-amber-500 border border-amber-500/30 rounded-md hover:bg-stone-700 text-xs font-medium whitespace-nowrap"
+                            >
+                                {isFetching ? t.form.searching : t.form.autoFetch}
+                            </button>
                         </div>
-                        <button
-                            type="button"
-                            onClick={handleFetchImage}
-                            disabled={isFetching}
-                            className="px-3 py-2 bg-stone-800 text-amber-500 border border-amber-500/30 rounded-md hover:bg-stone-700 text-xs font-medium whitespace-nowrap"
-                        >
-                            {isFetching ? t.form.searching : t.form.autoFetch}
-                        </button>
+                        {fetchError && (
+                            <p className="text-xs text-red-400">{fetchError}</p>
+                        )}
                     </div>
 
                     <div>
