@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useState, useEffect, useTransition, useRef, useCallback } from 'react'
 import { submitGrade, nextWine, previousWine, finishEvent, getUserGrade } from '@/app/actions/grading'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -56,6 +56,18 @@ export default function EventClient({
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
     const [confirmAction, setConfirmAction] = useState<'next' | 'previous' | null>(null)
 
+    // Refs to access latest state in cleanup/beforeunload callbacks
+    const gradeRef = useRef(grade)
+    const hasUnsavedChangesRef = useRef(hasUnsavedChanges)
+    const viewingWineOrderRef = useRef(viewingWineOrder)
+    const targetUserIdRef = useRef(targetUserId)
+    const prevTargetUserIdRef = useRef(targetUserId)
+
+    useEffect(() => { gradeRef.current = grade }, [grade])
+    useEffect(() => { hasUnsavedChangesRef.current = hasUnsavedChanges }, [hasUnsavedChanges])
+    useEffect(() => { viewingWineOrderRef.current = viewingWineOrder }, [viewingWineOrder])
+    useEffect(() => { targetUserIdRef.current = targetUserId }, [targetUserId])
+
     const isAdmin = userId === event.creatorId
     const isSuperUser = userRole === 'SUPER_USER'
 
@@ -90,6 +102,78 @@ export default function EventClient({
     // Helper to generate localStorage key for drafts
     const getDraftKey = (wineOrder: number, oderId: string) =>
         `wine-draft-${event.id}-${wineOrder}-${oderId}`
+
+    // Helper to build FormData for a grade submission
+    const createFormDataFrom = useCallback((data: NonNullable<GradeData>, wineOrder: number, forUserId: string) => {
+        const formData = new FormData()
+        formData.append('eventId', event.id)
+        formData.append('wineOrder', wineOrder.toString())
+        formData.append('colorScore', data.colorScore.toString())
+        formData.append('smellScore', data.smellScore.toString())
+        formData.append('tasteScore', data.tasteScore.toString())
+        if (forUserId !== userId) {
+            formData.append('targetUserId', forUserId)
+        }
+        return formData
+    }, [event.id, userId])
+
+    // Auto-commit grade to the database (fire-and-forget)
+    const commitGrade = useCallback(async (gradeToCommit: GradeData, wineOrder: number, forUserId: string) => {
+        if (!gradeToCommit || gradeToCommit.colorScore === 0 || gradeToCommit.smellScore === 0 || gradeToCommit.tasteScore === 0) return
+        try {
+            await submitGrade(null, createFormDataFrom(gradeToCommit, wineOrder, forUserId))
+            localStorage.removeItem(getDraftKey(wineOrder, forUserId))
+            setHasUnsavedChanges(false)
+            setSubmitted(true)
+        } catch (e) {
+            console.error('Auto-save failed:', e)
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [createFormDataFrom])
+
+    // sendBeacon-based commit for tab/browser close (synchronous, best-effort)
+    const sendBeaconGrade = useCallback((gradeToSend: GradeData, wineOrder: number, forUserId: string) => {
+        if (!gradeToSend || gradeToSend.colorScore === 0 || gradeToSend.smellScore === 0 || gradeToSend.tasteScore === 0) return
+        navigator.sendBeacon('/api/grade', JSON.stringify({
+            eventId: event.id,
+            wineOrder,
+            colorScore: gradeToSend.colorScore,
+            smellScore: gradeToSend.smellScore,
+            tasteScore: gradeToSend.tasteScore,
+            targetUserId: forUserId !== userId ? forUserId : undefined,
+        }))
+    }, [event.id, userId])
+
+    // Auto-commit on tab close / browser close
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            if (!hasUnsavedChangesRef.current) return
+            sendBeaconGrade(gradeRef.current, viewingWineOrderRef.current, targetUserIdRef.current)
+        }
+        window.addEventListener('beforeunload', handleBeforeUnload)
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+    }, [sendBeaconGrade])
+
+    // Auto-commit on component unmount (e.g. Next.js route change)
+    useEffect(() => {
+        return () => {
+            if (hasUnsavedChangesRef.current) {
+                sendBeaconGrade(gradeRef.current, viewingWineOrderRef.current, targetUserIdRef.current)
+            }
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [sendBeaconGrade])
+
+    // Auto-commit when super user changes target user
+    useEffect(() => {
+        if (targetUserId !== prevTargetUserIdRef.current) {
+            const prevUser = prevTargetUserIdRef.current
+            prevTargetUserIdRef.current = targetUserId
+            if (hasUnsavedChangesRef.current) {
+                commitGrade(gradeRef.current, viewingWineOrderRef.current, prevUser)
+            }
+        }
+    }, [targetUserId, commitGrade])
 
     // Load grade when viewingWineOrder or targetUserId changes
     useEffect(() => {
@@ -147,15 +231,21 @@ export default function EventClient({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [viewingWineOrder, targetUserId, event.id])
 
-    // Navigation handlers
+    // Navigation handlers — auto-commit current grade before switching wine
     const goToPreviousWine = () => {
         if (viewingWineOrder > 1) {
+            if (hasUnsavedChanges) {
+                commitGrade(grade, viewingWineOrder, targetUserId)
+            }
             setViewingWineOrder(viewingWineOrder - 1)
         }
     }
 
     const goToNextWine = () => {
         if (viewingWineOrder < maxWineOrder) {
+            if (hasUnsavedChanges) {
+                commitGrade(grade, viewingWineOrder, targetUserId)
+            }
             setViewingWineOrder(viewingWineOrder + 1)
             // Hide banner if user catches up to latest
             if (viewingWineOrder + 1 === maxWineOrder) {
@@ -165,6 +255,9 @@ export default function EventClient({
     }
 
     const goToLatestWine = () => {
+        if (hasUnsavedChanges) {
+            commitGrade(grade, viewingWineOrder, targetUserId)
+        }
         setViewingWineOrder(maxWineOrder)
         setShowNewWineBanner(false)
     }
@@ -193,16 +286,7 @@ export default function EventClient({
     }
 
     const createFormData = (data: typeof grade) => {
-        const formData = new FormData()
-        formData.append('eventId', event.id)
-        formData.append('wineOrder', viewingWineOrder.toString())
-        formData.append('colorScore', data!.colorScore.toString())
-        formData.append('smellScore', data!.smellScore.toString())
-        formData.append('tasteScore', data!.tasteScore.toString())
-        if (targetUserId !== userId) {
-            formData.append('targetUserId', targetUserId)
-        }
-        return formData
+        return createFormDataFrom(data!, viewingWineOrder, targetUserId)
     }
 
 
