@@ -178,6 +178,23 @@ export const translations = {
         serverError: 'Serviço de pesquisa de imagens indisponível',
         invalidRequest: 'Pesquisa inválida',
     },
+    recap: {
+        myRecap: 'Ficha de Prova',
+        subtitle: 'Reveja as suas pontuações para todos os vinhos antes de terminar',
+        viewRecap: 'Ficha de Prova',
+        wine: 'Vinho #',
+        color: 'Cor',
+        smell: 'Aroma',
+        taste: 'Sabor',
+        total: 'Total',
+        status: 'Estado',
+        graded: 'Avaliado',
+        notGraded: 'Sem avaliação',
+        jumpToWine: 'Ir para Vinho',
+        totalGraded: 'Vinhos Avaliados',
+        overallScore: 'Pontuação Acumulada',
+        close: 'Fechar',
+    },
 }
 
 export type Translations = typeof translations

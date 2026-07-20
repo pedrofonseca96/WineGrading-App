@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useTransition, useRef, useCallback } from 'react'
-import { submitGrade, nextWine, previousWine, finishEvent, getUserGrade } from '@/app/actions/grading'
+import { submitGrade, nextWine, previousWine, finishEvent, getUserGrade, getUserEventGrades } from '@/app/actions/grading'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -55,6 +55,22 @@ export default function EventClient({
     const [showSuccess, setShowSuccess] = useState(false)
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
     const [confirmAction, setConfirmAction] = useState<'next' | 'previous' | null>(null)
+    const [showRecapModal, setShowRecapModal] = useState(false)
+    const [userGradesList, setUserGradesList] = useState<Array<{ wineOrder: number; colorScore: number; smellScore: number; tasteScore: number }>>([])
+    const [isLoadingRecap, setIsLoadingRecap] = useState(false)
+
+    const openRecapModal = async () => {
+        setIsLoadingRecap(true)
+        setShowRecapModal(true)
+        try {
+            const grades = await getUserEventGrades(event.id, targetUserId)
+            setUserGradesList(grades)
+        } catch (e) {
+            console.error('Failed to fetch user grades list:', e)
+        } finally {
+            setIsLoadingRecap(false)
+        }
+    }
 
     // Refs to access latest state in cleanup/beforeunload callbacks
     const gradeRef = useRef(grade)
@@ -393,7 +409,20 @@ export default function EventClient({
                     </svg>
                     <span>{t.nav.backToDashboard}</span>
                 </Link>
-                <span className="text-xs font-serif text-amber-500/80 font-bold">{event.name}</span>
+                <div className="flex items-center gap-3">
+                    <span className="text-xs font-serif text-stone-400 hidden sm:inline">{event.name}</span>
+                    <button
+                        onClick={openRecapModal}
+                        className="group relative inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 bg-stone-900/90 hover:bg-stone-800 text-stone-200 hover:text-amber-300 border border-amber-500/35 hover:border-amber-500/60 text-xs sm:text-sm font-semibold rounded-xl shadow-lg shadow-black/40 transition-all duration-200 active:scale-95 overflow-hidden backdrop-blur-md"
+                    >
+                        <span className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-amber-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-amber-400 group-hover:scale-110 transition-transform duration-200" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                            <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                        </svg>
+                        <span className="relative z-10 tracking-tight">{t.recap.viewRecap}</span>
+                    </button>
+                </div>
             </div>
 
             {isSuperUser && users.length > 0 && (
@@ -586,6 +615,133 @@ export default function EventClient({
                             >
                                 {isPending ? t.common.loading : t.common.confirm}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Personal Grades Recap Modal */}
+            {showRecapModal && (
+                <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 animate-in fade-in duration-200 p-3 sm:p-4">
+                    <div className="bg-stone-900 border border-stone-700/80 rounded-2xl max-w-md w-full max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
+                        {/* Header */}
+                        <div className="p-4 sm:p-5 border-b border-stone-800 flex justify-between items-start bg-stone-900/90">
+                            <div>
+                                <h3 className="text-lg sm:text-xl font-serif font-bold text-amber-500">{t.recap.myRecap}</h3>
+                                <p className="text-stone-400 text-xs mt-0.5">{t.recap.subtitle}</p>
+                            </div>
+                            <button
+                                onClick={() => setShowRecapModal(false)}
+                                className="p-1.5 text-stone-400 hover:text-white rounded-lg hover:bg-stone-800 transition-colors"
+                                aria-label="Close"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Summary Header Cards */}
+                        <div className="bg-stone-950/70 p-3 px-4 border-b border-stone-800 grid grid-cols-2 gap-4 divide-x divide-stone-800 text-center text-xs">
+                            <div className="pr-2">
+                                <span className="text-stone-400 block uppercase tracking-wider text-[10px] font-medium mb-0.5">{t.recap.totalGraded}</span>
+                                <span className="text-stone-100 font-bold font-serif text-base">
+                                    {userGradesList.length} / {maxWineOrder}
+                                </span>
+                            </div>
+                            <div className="pl-2">
+                                <span className="text-stone-400 block uppercase tracking-wider text-[10px] font-medium mb-0.5">{t.recap.overallScore}</span>
+                                <span className="text-amber-500 font-bold font-serif text-base">
+                                    {userGradesList.reduce((acc, g) => acc + g.colorScore + g.smellScore + g.tasteScore, 0)} pts
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Content List */}
+                        <div className="p-4 sm:p-6 overflow-y-auto space-y-3.5 flex-1">
+                            {isLoadingRecap ? (
+                                <div className="flex items-center justify-center py-12">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" />
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {Array.from({ length: maxWineOrder }, (_, i) => i + 1).map((order) => {
+                                        const wineGrade = userGradesList.find(g => g.wineOrder === order)
+                                        const total = wineGrade ? wineGrade.colorScore + wineGrade.smellScore + wineGrade.tasteScore : 0
+                                        const isCurrent = order === viewingWineOrder
+
+                                        return (
+                                            <div
+                                                key={order}
+                                                onClick={() => {
+                                                    if (hasUnsavedChanges) {
+                                                        commitGrade(grade, viewingWineOrder, targetUserId)
+                                                    }
+                                                    setViewingWineOrder(order)
+                                                    setShowRecapModal(false)
+                                                }}
+                                                className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer space-y-3 group ${
+                                                    isCurrent
+                                                        ? 'bg-amber-950/30 border-amber-500/80 shadow-lg shadow-amber-950/20 ring-1 ring-amber-500/30'
+                                                        : wineGrade
+                                                        ? 'bg-stone-800/70 border-stone-700/80 hover:border-amber-500/50 hover:bg-stone-800'
+                                                        : 'bg-stone-900/50 border-stone-800/80 hover:border-stone-700 hover:bg-stone-800/50'
+                                                }`}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-serif font-bold text-amber-500 text-lg sm:text-xl">#{order}</span>
+                                                        {isCurrent && (
+                                                            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                                                                Active
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    {wineGrade ? (
+                                                        <div className="text-right">
+                                                            <span className="text-lg font-serif font-bold text-amber-400">
+                                                                {total} <span className="text-xs text-stone-400 font-sans font-normal">/ 20 pts</span>
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-xs font-semibold text-amber-400/90 group-hover:text-amber-300 transition-colors flex items-center gap-1">
+                                                            {t.recap.jumpToWine} →
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {wineGrade ? (
+                                                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-stone-750/80 text-center">
+                                                        <div className="bg-stone-900/60 py-2 px-1.5 rounded-xl border border-stone-800/60">
+                                                            <span className="text-[10px] text-stone-400 block uppercase font-medium tracking-wider mb-0.5">{t.event.color}</span>
+                                                            <span className="text-sm font-bold text-stone-200 font-serif">
+                                                                {wineGrade.colorScore} <span className="text-[10px] text-stone-500 font-normal">/3</span>
+                                                            </span>
+                                                        </div>
+                                                        <div className="bg-stone-900/60 py-2 px-1.5 rounded-xl border border-stone-800/60">
+                                                            <span className="text-[10px] text-stone-400 block uppercase font-medium tracking-wider mb-0.5">{t.event.smell}</span>
+                                                            <span className="text-sm font-bold text-stone-200 font-serif">
+                                                                {wineGrade.smellScore} <span className="text-[10px] text-stone-500 font-normal">/7</span>
+                                                            </span>
+                                                        </div>
+                                                        <div className="bg-stone-900/60 py-2 px-1.5 rounded-xl border border-stone-800/60">
+                                                            <span className="text-[10px] text-stone-400 block uppercase font-medium tracking-wider mb-0.5">{t.event.taste}</span>
+                                                            <span className="text-sm font-bold text-stone-200 font-serif">
+                                                                {wineGrade.tasteScore} <span className="text-[10px] text-stone-500 font-normal">/10</span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-xs text-stone-400 italic bg-stone-900/40 py-2 px-3 rounded-xl text-center border border-dashed border-stone-800">
+                                                        {t.recap.notGraded}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

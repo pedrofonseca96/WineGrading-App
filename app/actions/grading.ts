@@ -38,6 +38,28 @@ export async function getUserGrade(eventId: string, wineOrder: number, targetUse
     })
 }
 
+export async function getUserEventGrades(eventId: string, targetUserId?: string) {
+    const session = await verifySession()
+    const forUserId = targetUserId || session.userId
+
+    const currentUser = await prisma.user.findUnique({
+        where: { id: session.userId },
+        select: { role: true }
+    })
+
+    if (currentUser?.role !== 'SUPER_USER' && session.userId !== forUserId) {
+        throw new Error('Unauthorized')
+    }
+
+    return prisma.grade.findMany({
+        where: {
+            eventId,
+            userId: forUserId,
+        },
+        orderBy: { wineOrder: 'asc' },
+    })
+}
+
 export async function submitGrade(prevState: unknown, formData: FormData) {
     const session = await verifySession()
 
