@@ -102,6 +102,14 @@ export default function PresentationClient({ results, eventId, isCreator, initia
         }
     }
 
+    const handlePrevious = async () => {
+        if (revealedCount > 0) {
+            const newCount = revealedCount - 1
+            setRevealedCount(newCount)
+            await updateRevealCount(eventId, newCount)
+        }
+    }
+
     return (
         <div className="min-h-screen text-stone-100 flex flex-col items-center justify-center p-4 sm:p-8 relative overflow-hidden">
             {/* Background decoration */}
@@ -177,7 +185,7 @@ export default function PresentationClient({ results, eventId, isCreator, initia
                                             className="bg-stone-900 border border-stone-700 text-stone-200 focus:ring-amber-500 focus:border-amber-500 text-sm sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg w-48 sm:w-64 text-center font-serif appearance-none cursor-pointer"
                                             autoFocus
                                         >
-                                            <option value="" disabled>Who brought this?</option>
+                                            <option value="" disabled>{t.presentation.broughtBy}</option>
                                             {users.map(user => (
                                                 <option key={user.id} value={user.username}>{user.username}</option>
                                             ))}
@@ -186,7 +194,7 @@ export default function PresentationClient({ results, eventId, isCreator, initia
                                             type="submit"
                                             className="bg-amber-600 hover:bg-amber-500 text-stone-900 text-xs sm:text-sm font-bold px-4 sm:px-6 py-1.5 sm:py-2 rounded-lg transition-colors shadow-lg shadow-amber-900/20"
                                         >
-                                            Save
+                                            {t.common.save}
                                         </button>
                                     </form>
                                 ) : (
@@ -261,14 +269,24 @@ export default function PresentationClient({ results, eventId, isCreator, initia
                 )}
 
                 {isCreator && (
-                    <div className="fixed bottom-8 right-8 flex gap-4 z-50">
+                    <div className="fixed bottom-8 right-8 flex items-center gap-3 z-50">
                         {!isFinished && (
-                            <button
-                                onClick={handleNext}
-                                className="px-8 py-4 bg-amber-600 text-stone-900 font-bold rounded-full shadow-lg hover:bg-amber-500 transition-all transform hover:scale-105"
-                            >
-                                {t.presentation.revealNext}
-                            </button>
+                            <>
+                                {revealedCount > 0 && (
+                                    <button
+                                        onClick={handlePrevious}
+                                        className="px-6 py-3.5 bg-stone-800/90 text-stone-300 font-medium rounded-full shadow-xl hover:bg-stone-700 transition-all border border-stone-700 backdrop-blur-md"
+                                    >
+                                        ← {t.presentation.previousWine}
+                                    </button>
+                                )}
+                                <button
+                                    onClick={handleNext}
+                                    className="px-8 py-4 bg-amber-600 text-stone-900 font-bold rounded-full shadow-lg hover:bg-amber-500 transition-all transform hover:scale-105"
+                                >
+                                    {t.presentation.revealNext} →
+                                </button>
+                            </>
                         )}
                     </div>
                 )}

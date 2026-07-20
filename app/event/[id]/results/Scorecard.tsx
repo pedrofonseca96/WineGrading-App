@@ -1,6 +1,6 @@
 'use client'
 
-
+import { useLanguage } from '@/contexts/LanguageContext'
 
 type ScorecardProps = {
     wines: {
@@ -23,7 +23,7 @@ type ScorecardProps = {
 }
 
 export default function Scorecard({ wines, users, grades, isFinished, revealedWineOrders }: ScorecardProps) {
-    // const { t } = useLanguage()
+    const { t } = useLanguage()
 
     // Sort wines by order
     const sortedWines = [...wines].sort((a, b) => a.order - b.order)
@@ -52,10 +52,10 @@ export default function Scorecard({ wines, users, grades, isFinished, revealedWi
     return (
         <div className="mt-16 bg-stone-900/50 rounded-2xl border border-stone-800 overflow-hidden">
             <div className="p-6 border-b border-stone-800">
-                <h2 className="text-2xl font-serif font-bold text-amber-500">Scorecard</h2>
+                <h2 className="text-2xl font-serif font-bold text-amber-500">{t.scorecard.title}</h2>
                 {isFinished && winners.length > 0 && (
                     <p className="text-stone-400 mt-2">
-                        🏆 Winner: <span className="text-amber-400 font-bold">{winners.join(', ')}</span>
+                        {t.scorecard.winner} <span className="text-amber-400 font-bold">{winners.join(', ')}</span>
                     </p>
                 )}
             </div>
@@ -65,7 +65,7 @@ export default function Scorecard({ wines, users, grades, isFinished, revealedWi
                     <thead>
                         <tr>
                             <th className="p-4 border-b border-stone-800 bg-stone-900/80 sticky left-0 z-10 text-stone-300 font-medium">
-                                Participant
+                                {t.scorecard.participant}
                             </th>
                             {sortedWines.map(wine => (
                                 <th key={wine.order} className="p-4 border-b border-stone-800 text-stone-400 font-normal whitespace-nowrap">
@@ -98,7 +98,7 @@ export default function Scorecard({ wines, users, grades, isFinished, revealedWi
                         {/* Total Row */}
                         <tr className="bg-amber-900/10 font-bold">
                             <td className="p-4 sticky left-0 bg-stone-900/90 text-amber-500">
-                                Total
+                                {t.scorecard.total}
                             </td>
                             {sortedWines.map(wine => (
                                 <td key={wine.order} className="p-4 text-center text-amber-500">
@@ -113,15 +113,15 @@ export default function Scorecard({ wines, users, grades, isFinished, revealedWi
             {/* Aggregate Scores by Person Who Brought Wines */}
             {isFinished && broughtByLeaderboard.length > 0 && (
                 <div className="p-6 border-t border-stone-800">
-                    <h3 className="text-xl font-serif font-bold text-amber-500 mb-4">🍷 Brought By Leaderboard</h3>
+                    <h3 className="text-xl font-serif font-bold text-amber-500 mb-4">{t.scorecard.broughtByLeaderboard}</h3>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr>
-                                    <th className="p-3 border-b border-stone-800 text-stone-400 font-medium">Rank</th>
-                                    <th className="p-3 border-b border-stone-800 text-stone-400 font-medium">Name</th>
-                                    <th className="p-3 border-b border-stone-800 text-stone-400 font-medium text-center">Wines</th>
-                                    <th className="p-3 border-b border-stone-800 text-stone-400 font-medium text-right">Total Score</th>
+                                    <th className="p-3 border-b border-stone-800 text-stone-400 font-medium">{t.scorecard.rank}</th>
+                                    <th className="p-3 border-b border-stone-800 text-stone-400 font-medium">{t.scorecard.name}</th>
+                                    <th className="p-3 border-b border-stone-800 text-stone-400 font-medium text-center">{t.scorecard.wines}</th>
+                                    <th className="p-3 border-b border-stone-800 text-stone-400 font-medium text-right">{t.scorecard.totalScore}</th>
                                 </tr>
                             </thead>
                             <tbody>

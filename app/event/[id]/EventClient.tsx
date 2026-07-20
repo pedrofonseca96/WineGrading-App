@@ -161,7 +161,6 @@ export default function EventClient({
                 sendBeaconGrade(gradeRef.current, viewingWineOrderRef.current, targetUserIdRef.current)
             }
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sendBeaconGrade])
 
     // Auto-commit when super user changes target user
@@ -383,6 +382,20 @@ export default function EventClient({
                 )}
             </div>
 
+            {/* Back to Dashboard bar */}
+            <div className="flex items-center justify-between bg-stone-900/60 p-3 rounded-xl border border-stone-800">
+                <Link
+                    href="/dashboard"
+                    className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-stone-400 hover:text-amber-500 transition-colors"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                    </svg>
+                    <span>{t.nav.backToDashboard}</span>
+                </Link>
+                <span className="text-xs font-serif text-amber-500/80 font-bold">{event.name}</span>
+            </div>
+
             {isSuperUser && users.length > 0 && (
                 <div className="bg-stone-800 p-4 rounded-xl border border-amber-500/30">
                     <label className="block text-xs font-medium text-amber-500 uppercase tracking-wider mb-2">
@@ -418,7 +431,7 @@ export default function EventClient({
                                     <button
                                         key={val}
                                         onClick={() => handleGradeChange('colorScore', val)}
-                                        className={`flex-1 py-3 rounded-lg font-bold text-lg transition-all ${grade!.colorScore === val
+                                        className={`flex-1 py-3 rounded-lg font-bold text-lg transition-all min-h-[48px] flex items-center justify-center ${grade!.colorScore === val
                                             ? 'bg-amber-600 text-stone-900 shadow-lg scale-105'
                                             : 'bg-stone-700 text-stone-400 hover:bg-stone-600'
                                             }`}
@@ -437,7 +450,7 @@ export default function EventClient({
                                     <button
                                         key={val}
                                         onClick={() => handleGradeChange('smellScore', val)}
-                                        className={`py-3 rounded-lg font-bold text-lg transition-all ${grade!.smellScore === val
+                                        className={`py-3 rounded-lg font-bold text-lg transition-all min-h-[48px] flex items-center justify-center ${grade!.smellScore === val
                                             ? 'bg-amber-600 text-stone-900 shadow-lg scale-105'
                                             : 'bg-stone-700 text-stone-400 hover:bg-stone-600'
                                             }`}
@@ -456,7 +469,7 @@ export default function EventClient({
                                     <button
                                         key={val}
                                         onClick={() => handleGradeChange('tasteScore', val)}
-                                        className={`py-3 rounded-lg font-bold text-lg transition-all ${grade!.tasteScore === val
+                                        className={`py-3 rounded-lg font-bold text-lg transition-all min-h-[48px] flex items-center justify-center ${grade!.tasteScore === val
                                             ? 'bg-amber-600 text-stone-900 shadow-lg scale-105'
                                             : 'bg-stone-700 text-stone-400 hover:bg-stone-600'
                                             }`}
@@ -467,7 +480,20 @@ export default function EventClient({
                             </div>
                         </div>
 
-                        <div className="pt-4">
+                        {/* Live Running Score Total Calculator Badge */}
+                        <div className="bg-stone-900/70 p-4 rounded-xl border border-stone-700/70 flex items-center justify-between text-stone-200">
+                            <span className="text-xs uppercase tracking-wider text-stone-400 font-semibold">{t.event.totalScore}</span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-stone-400 text-xs sm:text-sm font-mono">
+                                    {(grade?.colorScore || 0)} + {(grade?.smellScore || 0)} + {(grade?.tasteScore || 0)} =
+                                </span>
+                                <span className={`text-2xl font-bold font-serif ${(grade?.colorScore || 0) > 0 && (grade?.smellScore || 0) > 0 && (grade?.tasteScore || 0) > 0 ? 'text-amber-500' : 'text-stone-500'}`}>
+                                    {(grade?.colorScore || 0) + (grade?.smellScore || 0) + (grade?.tasteScore || 0)} <span className="text-xs text-stone-500 font-normal">/ 20</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="pt-2">
                             {hasUnsavedChanges && !submitted && (
                                 <p className="text-amber-400 text-sm text-center mb-3 flex items-center justify-center gap-2">
                                     <span className="inline-block w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>

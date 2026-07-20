@@ -135,6 +135,21 @@ export default function EditWineForm({ eventId, wineOrder, initialName, initialD
                         />
                     </div>
 
+                    <div>
+                        <select
+                            name="broughtBy"
+                            defaultValue={initialBroughtBy || ''}
+                            className="w-full px-3 py-2 bg-stone-800 border border-stone-600 rounded-md text-sm text-stone-100 focus:outline-none focus:border-amber-500"
+                        >
+                            <option value="">{t.presentation.broughtBy} (Optional)</option>
+                            {users.map((u) => (
+                                <option key={u.id} value={u.username}>
+                                    {u.username}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
 
 
                     <input type="hidden" name="imageUrl" value={imageUrl} />
