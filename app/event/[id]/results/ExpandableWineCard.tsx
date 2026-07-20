@@ -29,11 +29,11 @@ type WineCardProps = {
     }
     index: number
     eventId: string
-    isAdmin: boolean
+    isAdmin?: boolean
     children: React.ReactNode
 }
 
-export default function ExpandableWineCard({ result, index, eventId, isAdmin, children }: WineCardProps) {
+export default function ExpandableWineCard({ result, index, eventId, children }: WineCardProps) {
     const [isExpanded, setIsExpanded] = useState(false)
     const [breakdown, setBreakdown] = useState<GradeBreakdown[]>([])
     const [isLoading, setIsLoading] = useState(false)
@@ -59,8 +59,8 @@ export default function ExpandableWineCard({ result, index, eventId, isAdmin, ch
                 <div className="p-4 sm:p-6">
                     {/* Mobile: Row with Rank, Wine Name, Score all inline */}
                     <div className="flex items-center gap-3 sm:gap-6">
-                        {/* Wine Image - Only show to non-admin users */}
-                        {!isAdmin && result.wine?.imageUrl && (
+                        {/* Wine Image */}
+                        {result.wine?.imageUrl && (
                             <div className="flex-shrink-0 w-16 h-16 sm:w-24 sm:h-24 overflow-hidden rounded-lg border-2 border-stone-600">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
